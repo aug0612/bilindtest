@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦄 UniBlind</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:rgba(255,255,255,.11);--gb:rgba(255,255,255,.22);--gs:rgba(255,255,255,.38);--blur:22px;--r:20px;--mu:rgba(255,255,255,.5);--ac:#c4b5fd;--ac2:#f9a8d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;font-family:'Outfit',sans-serif;color:#fff;overflow-x:hidden;background:#0d0020}
+.bg{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 10% 10%,#7c3aed 0%,transparent 55%),
+    radial-gradient(ellipse 60% 70% at 90% 20%,#db2777 0%,transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% 90%,#0ea5e9 0%,transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 70%,#f59e0b 0%,transparent 45%),#0d0020;
+  animation:bgS 12s ease-in-out infinite alternate}
+@keyframes bgS{0%{filter:hue-rotate(0deg) brightness(.9)}50%{filter:hue-rotate(20deg) brightness(1.05)}100%{filter:hue-rotate(-15deg) brightness(.95)}}
+.bg::after{content:'';position:absolute;inset:0;opacity:.28;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
+
+.glass{background:var(--g);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);
+  border:1px solid var(--gb);border-radius:var(--r);
+  box-shadow:0 8px 32px rgba(0,0,0,.28),inset 0 1px 0 var(--gs),inset 0 -1px 0 rgba(0,0,0,.1);
+  position:relative;overflow:hidden}
+.glass::before{content:'';position:absolute;top:0;left:-60%;width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);transform:skewX(-15deg);pointer-events:none}
+
+.wrap{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:1.5rem 1.2rem 5rem}
+
+/* HEADER */
+header{display:flex;flex-direction:column;align-items:center;padding:2rem 0 1.2rem;text-align:center}
+.uni{font-size:3.8rem;line-height:1;margin-bottom:.3rem;
+  filter:drop-shadow(0 0 28px rgba(219,39,119,.65)) drop-shadow(0 0 55px rgba(124,58,237,.45));
+  animation:fl 4s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+.stitle{font-family:'Playfair Display',serif;font-size:clamp(2rem,5.5vw,3.8rem);font-weight:900;
+  background:linear-gradient(135deg,#fff 0%,#f9a8d4 30%,#c4b5fd 60%,#93c5fd 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1;margin-bottom:.3rem}
+.stag{font-size:.83rem;font-weight:300;color:var(--mu);letter-spacing:.25em;text-transform:uppercase}
+
+/* TABS */
+.tabs{display:flex;gap:.45rem;margin:1.4rem auto 0;justify-content:center}
+.tab{padding:.5rem 1.3rem;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--mu);
+  backdrop-filter:blur(10px);transition:all .2s;letter-spacing:.03em}
+.tab:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.tab.on{background:rgba(196,165,253,.2);border-color:var(--ac);color:var(--ac);box-shadow:0 0 16px rgba(196,165,253,.16)}
+
+.screen{display:none}.screen.on{display:block}
+
+/* ══ RECO SCREEN ══ */
+.qsec{margin-top:1.8rem;display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+.qcard{width:100%;max-width:660px;padding:1.7rem 2rem}
+.qlbl{font-size:.68rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:rgba(196,165,253,.78);margin-bottom:.45rem}
+.qtxt{font-family:'Playfair Display',serif;font-size:clamp(1.05rem,2.8vw,1.45rem);font-weight:700;margin-bottom:1.2rem;line-height:1.3}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.55rem}
+.cbtn{padding:.82rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:.86rem;font-weight:500;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.48rem;
+  backdrop-filter:blur(8px);text-align:left;position:relative;overflow:hidden}
+.cbtn:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.3);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.cbtn.sel{background:rgba(196,165,253,.2);border-color:rgba(196,165,253,.58);box-shadow:0 0 16px rgba(196,165,253,.18),inset 0 1px 0 rgba(255,255,255,.28)}
+.em{font-size:1.1rem}
+.ctabtn{padding:.9rem 2.1rem;background:linear-gradient(135deg,rgba(196,165,253,.28),rgba(244,114,182,.25));
+  border:1px solid rgba(196,165,253,.38);border-radius:50px;color:#fff;font-family:'Outfit',sans-serif;
+  font-size:.92rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
+  backdrop-filter:blur(12px);box-shadow:0 8px 22px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.28);
+  transition:all .25s;display:none}
+.ctabtn.vis{display:inline-flex;align-items:center;gap:.42rem}
+.ctabtn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 14px 34px rgba(0,0,0,.4)}
+
+#rr{display:none;margin-top:1.8rem}
+.rh{text-align:center;margin-bottom:1.6rem}
+.rh h2{font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3.5vw,2rem);font-weight:900;
+  background:linear-gradient(135deg,#fff,#c4b5fd,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.rh p{color:var(--mu);font-size:.82rem}
+
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.3rem}
+.vcard{cursor:pointer;transition:all .25s}
+.vcard:hover{transform:translateY(-4px)}
+.vcard:hover .vci{border-color:rgba(255,255,255,.36);box-shadow:0 18px 42px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.38)}
+.vci{overflow:hidden;border-radius:var(--r);border:1px solid var(--gb);background:var(--g);
+  backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));
+  box-shadow:0 8px 28px rgba(0,0,0,.25),inset 0 1px 0 var(--gs);transition:all .25s}
+.vthumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:rgba(0,0,0,.3)}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.vcard:hover .vthumb img{transform:scale(1.05)}
+.vplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.18);transition:background .2s}
+.vcard:hover .vplay{background:rgba(0,0,0,.04)}
+.vpc{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);
+  border:2px solid rgba(255,255,255,.46);display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .2s}
+.vcard:hover .vpc{transform:scale(1.1)}
+.vbadge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.52);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:.16rem .45rem;font-size:.66rem;font-weight:600;color:#fff}
+.vbody{padding:.85rem 1.05rem 1.05rem}
+.vtag{font-size:.64rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(196,165,253,.82);margin-bottom:.25rem}
+.vtitle{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;line-height:1.32;margin-bottom:.3rem;color:#fff}
+.vmeta{font-size:.72rem;color:var(--mu)}
+
+.rbtn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:50px;
+  padding:.5rem 1.4rem;color:var(--mu);font-family:'Outfit',sans-serif;font-size:.81rem;cursor:pointer;
+  backdrop-filter:blur(8px);transition:all .2s;display:block;margin:1.6rem auto 0}
+.rbtn:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+
+/* ══ PLAYER MODAL (vidéo + scores) ══ */
+.overlay{display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;
+  padding:1rem;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  animation:fi .2s ease}
+.overlay.on{display:flex}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+.pmodal{width:100%;max-width:900px;padding:1.4rem;display:flex;flex-direction:column;gap:1.1rem}
+
+/* yt player */
+.ytbox{position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:14px;overflow:hidden;
+  box-shadow:0 16px 50px rgba(0,0,0,.5);background:#000}
+.ytbox iframe,.ytbox #yt-player{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:14px}
+
+/* scores inside modal */
+.modal-bottom{display:flex;flex-direction:column;gap:.9rem}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.modal-vtitle{font-family:'Playfair Display',serif;font-size:clamp(.9rem,2.5vw,1.2rem);font-weight:700;
+  line-height:1.28;flex:1;color:#fff}
+.cls{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.9rem;color:#fff;transition:all .2s;flex-shrink:0}
+.cls:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+
+/* inline score strip below video */
+.inline-scores{display:none;flex-direction:column;gap:.6rem;margin-top:.5rem}
+.inline-scores.has-players{display:flex}
+.inline-scores-label{font-size:.64rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(196,165,253,.75);margin-bottom:.1rem}
+.inline-players{display:flex;flex-wrap:wrap;gap:.45rem}
+.inline-prow{display:flex;align-items:center;gap:.45rem;padding:.42rem .7rem;border-radius:10px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);transition:all .2s}
+.inline-prow:hover{background:rgba(255,255,255,.12)}
+.inline-pav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;flex-shrink:0;color:#fff}
+.inline-pname{font-size:.8rem;font-weight:600;min-width:40px}
+.inline-score{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;min-width:1.8rem;text-align:center}
+.inline-ctrl{display:flex;gap:.28rem}
+.isb{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;line-height:1}
+.isb:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+.isb.ip:hover{background:rgba(196,165,253,.35);border-color:var(--ac)}
+.isb.im:hover{background:rgba(244,114,182,.3);border-color:var(--ac2)}
+.inline-empty{font-size:.8rem;color:var(--mu);padding:.3rem .1rem}
+.inline-empty span{color:rgba(196,165,253,.7);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.inline-empty span:hover{color:var(--ac)}
+
+/* players inside modal - kept for compatibility */
+
+/* ══ SCORES SCREEN ══ */
+.sscreen{max-width:740px;margin:1.8rem auto 0}
+.stitle2{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--ac);margin-bottom:.9rem}
+.apr{display:flex;gap:.55rem;margin-bottom:1.1rem}
+.apr input{flex:1;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.17);
+  border-radius:11px;padding:.68rem .95rem;color:#fff;font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s}
+.apr input:focus{border-color:var(--ac)}
+.apr input::placeholder{color:var(--mu)}
+
+.btn{display:inline-flex;align-items:center;gap:.38rem;padding:.6rem 1.2rem;border-radius:50px;
+  font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;letter-spacing:.04em}
+.bprim{background:linear-gradient(135deg,rgba(196,165,253,.28),rgba(244,114,182,.22));
+  border-color:rgba(196,165,253,.38);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.18)}
+.bprim:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.bgh{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:var(--mu)}
+.bgh:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.bdng{background:rgba(239,68,68,.13);border-color:rgba(239,68,68,.32);color:#fca5a5}
+.bdng:hover{background:rgba(239,68,68,.26)}
+
+.plist{display:flex;flex-direction:column;gap:.62rem;margin-bottom:1.3rem}
+.prow{display:flex;align-items:center;gap:.75rem;padding:.82rem 1.05rem;border-radius:13px}
+.pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;flex-shrink:0;color:#fff}
+.pname{flex:1;font-weight:600;font-size:.9rem}
+.pscore{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;min-width:2.4rem;text-align:center}
+.pctrl{display:flex;gap:.32rem}
+.psb{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;line-height:1}
+.psb:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+.psb.pp:hover{background:rgba(196,165,253,.35);border-color:var(--ac)}
+.psb.pm:hover{background:rgba(244,114,182,.3);border-color:var(--ac2)}
+.del{width:26px;height:26px;border-radius:50%;border:none;background:rgba(255,255,255,.07);
+  color:var(--mu);font-size:.76rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.del:hover{background:rgba(239,68,68,.3);color:#fff}
+
+.empty{text-align:center;padding:2.2rem 1rem;color:var(--mu);font-size:.87rem}
+.empty .big{font-size:2.3rem;margin-bottom:.5rem}
+
+.podcard{margin-top:1.4rem}
+.podrow{display:flex;align-items:center;gap:.7rem;padding:.7rem 1.05rem;border-radius:13px;margin-bottom:.45rem}
+.podrank{font-size:1.2rem;min-width:1.9rem;text-align:center}
+.podname{flex:1;font-weight:600}
+.podpts{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700}
+
+.arow{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:3px}
+
+@media(max-width:540px){
+  .qcard{padding:1.2rem}
+  .choices{grid-template-columns:1fr 1fr}
+  .vgrid{grid-template-columns:1fr}
+  .pmodal{padding:.9rem;gap:.8rem}
+  .mplayers{gap:.4rem}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<!-- ══════════ MODAL VIDÉO + SCORES ══════════ -->
+<div class="overlay" id="overlay">
+  <div class="pmodal glass">
+
+    <!-- YouTube IFrame API player -->
+    <div class="ytbox" id="ytbox">
+      <div id="yt-player"></div>
+    </div>
+
+    <!-- Points directement sous la vidéo -->
+    <div class="inline-scores" id="inline-scores">
+      <div class="inline-scores-label">🏆 Points en direct</div>
+      <div class="inline-players" id="inline-players-list">
+        <span class="inline-empty">Aucun joueur — <span onclick="goScores()">ajoute des joueurs ici</span></span>
+      </div>
+    </div>
+
+    <!-- titre + fermer -->
+    <div class="modal-hdr" style="margin-top:.2rem">
+      <div class="modal-vtitle" id="mvtitle"></div>
+      <button class="cls" onclick="closeOverlay()">✕</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="wrap">
+  <header>
+    <div class="uni">🦄</div>
+    <div class="stitle">UniBlind</div>
+    <div class="stag">Trouve ton blind test parfait</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('reco',this)">🎵 Recommandations</button>
+    <button class="tab" onclick="switchTab('scores',this)">🏆 Joueurs & Scores</button>
+  </div>
+
+  <!-- ══ SCREEN RECO ══ -->
+  <div id="screen-reco" class="screen on">
+
+    <div class="qsec" id="qs">
+      <div class="glass qcard" id="q1">
+        <div class="qlbl">Question 1 / 3</div>
+        <div class="qtxt">Quelle est l'ambiance de ta soirée ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('mood','famille')" data-k="mood" data-v="famille"><span class="em">👨‍👩‍👧</span>En famille</button>
+          <button class="cbtn" onclick="pick('mood','amis')" data-k="mood" data-v="amis"><span class="em">🥂</span>Entre amis</button>
+          <button class="cbtn" onclick="pick('mood','solo')" data-k="mood" data-v="solo"><span class="em">🎧</span>Solo / défi</button>
+          <button class="cbtn" onclick="pick('mood','enfants')" data-k="mood" data-v="enfants"><span class="em">🧒</span>Avec enfants</button>
+        </div>
+      </div>
+
+      <div class="glass qcard" id="q2" style="opacity:.38;pointer-events:none;transition:opacity .4s">
+        <div class="qlbl">Question 2 / 3</div>
+        <div class="qtxt">Quel genre de musique vous branche ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('genre','pop')" data-k="genre" data-v="pop"><span class="em">🎤</span>Pop / Variété</button>
+          <button class="cbtn" onclick="pick('genre','rock')" data-k="genre" data-v="rock"><span class="em">🎸</span>Rock</button>
+          <button class="cbtn" onclick="pick('genre','gaming')" data-k="genre" data-v="gaming"><span class="em">🎮</span>Jeux vidéo</button>
+          <button class="cbtn" onclick="pick('genre','films')" data-k="genre" data-v="films"><span class="em">🎬</span>Films / Séries</button>
+          <button class="cbtn" onclick="pick('genre','disney')" data-k="genre" data-v="disney"><span class="em">✨</span>Disney / Animés</button>
+          <button class="cbtn" onclick="pick('genre','tout')" data-k="genre" data-v="tout"><span class="em">🎵</span>Tout genre</button>
+        </div>
+      </div>
+
+      <div class="glass qcard" id="q3" style="opacity:.38;pointer-events:none;transition:opacity .4s">
+        <div class="qlbl">Question 3 / 3</div>
+        <div class="qtxt">Quelle époque vous parle le plus ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('era','80s')" data-k="era" data-v="80s"><span class="em">📼</span>Années 80</button>
+          <button class="cbtn" onclick="pick('era','90s')" data-k="era" data-v="90s"><span class="em">💿</span>Années 90</button>
+          <button class="cbtn" onclick="pick('era','2000s')" data-k="era" data-v="2000s"><span class="em">📱</span>Années 2000</button>
+          <button class="cbtn" onclick="pick('era','2010s')" data-k="era" data-v="2010s"><span class="em">🎙️</span>Années 2010+</button>
+          <button class="cbtn" onclick="pick('era','all')" data-k="era" data-v="all"><span class="em">🌀</span>Toutes générations</button>
+        </div>
+      </div>
+
+      <button class="ctabtn" id="ctabtn" onclick="showResults()">🦄 Voir mes recommandations →</button>
+    </div>
+
+    <div id="rr">
+      <div class="rh">
+        <h2>Tes blind tests parfaits ✨</h2>
+        <p>Clique sur une vidéo pour la lancer dans le site</p>
+      </div>
+      <div class="vgrid" id="vgrid"></div>
+      <button class="rbtn" onclick="resetReco()">← Changer mes préférences</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN SCORES ══ -->
+  <div id="screen-scores" class="screen">
+    <div class="sscreen">
+
+      <div class="glass qcard">
+        <div class="stitle2">Ajouter un joueur</div>
+        <div class="apr">
+          <input type="text" id="pinput" placeholder="Nom du joueur..." maxlength="20" onkeydown="if(event.key==='Enter')addPlayer()">
+          <button class="btn bprim" onclick="addPlayer()">+ Ajouter</button>
+        </div>
+        <div id="plist" class="plist">
+          <div class="empty"><div class="big">🎤</div>Aucun joueur.<br>Ajoute des joueurs pour commencer !</div>
+        </div>
+        <div class="arow">
+          <button class="btn bgh" onclick="resetScores()">↺ Réinitialiser scores</button>
+          <button class="btn bdng" onclick="clearAll()">🗑 Tout effacer</button>
+        </div>
+      </div>
+
+      <div class="glass qcard podcard" id="podcard" style="display:none">
+        <div class="stitle2">🏆 Classement</div>
+        <div id="podlist"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════
+//  VIDEOS DATA
+// ══════════════════════════════
+const VD=[
+  {id:'291PIYVULPU',title:'100 musiques connues (2000–2020)',tag:'Pop · Variété',badge:'100 extraits',genre:['pop','tout'],era:['2000s','2010s','all'],mood:['amis','solo','famille']},
+  {id:'mgQP9pVFrSQ',title:'Blind Test toutes générations — 70 extraits (1961–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis','solo']},
+  {id:'0YWt4Ai8q_g',title:'Blind Test toutes générations — 70 extraits (1962–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis']},
+  {id:'8v_hXF9CZPU',title:'Blind Test toutes générations — 70 extraits (1964–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis']},
+  {id:'v0yVed3zq9M',title:'Blind test 100 titres super facile',tag:'Pop · Variété',badge:'100 extraits',genre:['pop','tout'],era:['all'],mood:['famille','enfants','amis']},
+  {id:'Etk-vCwOcN4',title:'Blind Test toutes générations — 50 chansons (1980–2022)',tag:'Pop · Variété',badge:'50 extraits',genre:['pop','tout'],era:['all'],mood:['amis','famille']},
+  {id:'h4JibqIq6AE',title:'Blind Test Années 80–90 — tubes cultes pop & rock',tag:'Années 80–90',badge:'Culte',genre:['pop','rock','tout'],era:['80s','90s','all'],mood:['amis','famille','solo']},
+  {id:'PYnPnSRL8uw',title:'Blind Test Années 90 — 40 extraits',tag:'Années 90',badge:'40 extraits',genre:['pop','tout'],era:['90s','all'],mood:['amis','famille','solo']},
+  {id:'T5qAMIy_nL0',title:'Blind Test Rock Années 90',tag:'Rock · Années 90',badge:'Rock',genre:['rock','tout'],era:['90s','all'],mood:['amis','solo']},
+  {id:'9pnLTGFGJHM',title:'Blind Test 80s–2000s US/UK — Pop, Rock, Rap',tag:'Pop · Rock · Rap',badge:'Hits US/UK',genre:['pop','rock','tout'],era:['80s','90s','2000s','all'],mood:['amis','solo']},
+  {id:'MXD5gq1C678',title:'Blind Test Jeux Vidéo — 20 musiques cultes',tag:'Jeux Vidéo',badge:'20 extraits',genre:['gaming'],era:['all','2000s','2010s'],mood:['amis','solo']},
+  {id:'GW-aEqojg34',title:'Blind Test Jeux Vidéo — 50 musiques',tag:'Jeux Vidéo',badge:'50 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'rPh7vI2I3QE',title:'Blind Test Jeux Vidéo — 100 extraits + 10 bonus',tag:'Jeux Vidéo',badge:'110 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'U5M2jdaCWyQ',title:'Blind Test Jeux Vidéo — 125 extraits + bonus',tag:'Jeux Vidéo',badge:'125 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'lVlNRxQSX8s',title:'Blind Test Jeux Vidéo — 110 extraits (avec réponses)',tag:'Jeux Vidéo',badge:'110 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'rBE7JaaKKuE',title:'Blind Test Jeux Vidéo — 20 titres (facile)',tag:'Jeux Vidéo · Easy',badge:'Facile',genre:['gaming','disney'],era:['all'],mood:['enfants','famille','solo']},
+  {id:'XueP6Z7f14s',title:'Blind Test 2021 — 70 extraits toute ambiance',tag:'Tout genre',badge:'70 extraits',genre:['tout'],era:['all','2000s','2010s'],mood:['enfants','famille','amis']},
+  {id:'Nwg50BREcfg',title:'Blind Test Jeux Vidéo — 50 extraits toutes générations',tag:'Jeux Vidéo',badge:'50 extraits',genre:['gaming','tout'],era:['all'],mood:['amis','solo','famille']},
+];
+
+const PC=[
+  {bg:'rgba(196,165,253,.22)',bd:'rgba(196,165,253,.48)',tx:'#c4b5fd',av:'#7c3aed'},
+  {bg:'rgba(249,168,212,.2)',bd:'rgba(249,168,212,.48)',tx:'#f9a8d4',av:'#db2777'},
+  {bg:'rgba(147,197,253,.2)',bd:'rgba(147,197,253,.48)',tx:'#93c5fd',av:'#0ea5e9'},
+  {bg:'rgba(110,231,183,.2)',bd:'rgba(110,231,183,.48)',tx:'#6ee7b7',av:'#059669'},
+  {bg:'rgba(253,224,132,.2)',bd:'rgba(253,224,132,.48)',tx:'#fde047',av:'#ca8a04'},
+  {bg:'rgba(252,165,165,.2)',bd:'rgba(252,165,165,.48)',tx:'#fca5a5',av:'#dc2626'},
+  {bg:'rgba(216,180,254,.2)',bd:'rgba(216,180,254,.48)',tx:'#d8b4fe',av:'#9333ea'},
+  {bg:'rgba(134,239,172,.2)',bd:'rgba(134,239,172,.48)',tx:'#86efac',av:'#16a34a'},
+];
+
+// ══════════════════════════════
+//  NAV
+// ══════════════════════════════
+function switchTab(tab,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('screen-'+tab).classList.add('on');
+  el.classList.add('on');
+}
+function goScores(){
+  closeOverlay();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('screen-scores').classList.add('on');
+  document.querySelectorAll('.tab')[1].classList.add('on');
+}
+
+// ══════════════════════════════
+//  RECO
+// ══════════════════════════════
+const prefs={mood:null,genre:null,era:null};
+function pick(k,v){
+  prefs[k]=v;
+  document.querySelectorAll('[data-k="'+k+'"]').forEach(b=>b.classList.toggle('sel',b.dataset.v===v));
+  if(k==='mood') unlock('q2');
+  if(k==='genre') unlock('q3');
+  if(k==='era') document.getElementById('ctabtn').classList.add('vis');
+}
+function unlock(id){
+  const e=document.getElementById(id);e.style.opacity='1';e.style.pointerEvents='auto';
+  setTimeout(()=>e.scrollIntoView({behavior:'smooth',block:'center'}),120);
+}
+function showResults(){
+  if(!prefs.mood||!prefs.genre||!prefs.era)return;
+  const sc=VD.map(v=>{
+    let s=0;
+    if(v.mood.includes(prefs.mood))s+=3;
+    if(v.genre.includes(prefs.genre))s+=4;
+    if(v.era.includes(prefs.era))s+=3;
+    return{...v,score:s};
+  }).filter(v=>v.score>=3).sort((a,b)=>b.score-a.score);
+  const seen=new Set(),picks=[];
+  for(const v of sc){if(!seen.has(v.id)){seen.add(v.id);picks.push(v);}if(picks.length>=6)break;}
+  if(picks.length<3){for(const v of VD){if(!seen.has(v.id)){seen.add(v.id);picks.push(v);}if(picks.length>=6)break;}}
+  document.getElementById('vgrid').innerHTML=picks.map(v=>`
+    <div class="vcard" onclick="openVideo('${v.id}','${v.title.replace(/'/g,"&#39;")}')">
+      <div class="vci">
+        <div class="vthumb">
+          <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
+          <div class="vplay"><div class="vpc">▶</div></div>
+          <div class="vbadge">${v.badge}</div>
+        </div>
+        <div class="vbody">
+          <div class="vtag">${v.tag}</div>
+          <div class="vtitle">${v.title}</div>
+          <div class="vmeta">🦄 Cliquer pour regarder ici</div>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('qs').style.display='none';
+  const rr=document.getElementById('rr');rr.style.display='block';
+  rr.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetReco(){
+  prefs.mood=prefs.genre=prefs.era=null;
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('sel'));
+  ['q2','q3'].forEach(id=>{const e=document.getElementById(id);e.style.opacity='.38';e.style.pointerEvents='none';});
+  document.getElementById('ctabtn').classList.remove('vis');
+  document.getElementById('rr').style.display='none';
+  document.getElementById('qs').style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════
+//  YOUTUBE IFRAME API
+// ══════════════════════════════
+var ytPlayer = null;
+var ytReady = false;
+var pendingVideoId = null;
+
+// Inject the YouTube IFrame API script once
+(function(){
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+// Called automatically by the API when ready
+function onYouTubeIframeAPIReady() {
+  ytReady = true;
+  ytPlayer = new YT.Player('yt-player', {
+    height: '100%',
+    width: '100%',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1
+    },
+    events: {
+      onReady: function(e) {
+        if (pendingVideoId) {
+          e.target.loadVideoById(pendingVideoId);
+          pendingVideoId = null;
+        }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════
+//  VIDEO OVERLAY
+// ══════════════════════════════
+function openVideo(id, title) {
+  document.getElementById('mvtitle').textContent = title;
+  renderInlinePlayers();
+  document.getElementById('overlay').classList.add('on');
+  document.body.style.overflow = 'hidden';
+
+  if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+    ytPlayer.loadVideoById(id);
+  } else {
+    pendingVideoId = id;
+    // Fallback: si l'API n'est pas encore prête, on réessaie après un délai
+    var tries = 0;
+    var check = setInterval(function() {
+      tries++;
+      if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+        ytPlayer.loadVideoById(pendingVideoId);
+        pendingVideoId = null;
+        clearInterval(check);
+      } else if (tries > 20) {
+        clearInterval(check);
+      }
+    }, 200);
+  }
+}
+
+function closeOverlay() {
+  if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+    ytPlayer.stopVideo();
+  }
+  document.getElementById('overlay').classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('overlay').addEventListener('click', function(e) { if (e.target === this) closeOverlay(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+// ══════════════════════════════
+//  PLAYERS
+// ══════════════════════════════
+let players=[];
+function ini(n){return n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+function addPlayer(){
+  const inp=document.getElementById('pinput');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(players.find(p=>p.name.toLowerCase()===name.toLowerCase())){
+    inp.style.borderColor='rgba(239,68,68,.6)';setTimeout(()=>inp.style.borderColor='',900);return;
+  }
+  if(players.length>=8)return;
+  players.push({name,score:0});inp.value='';inp.focus();
+  renderPlayers();renderInlinePlayers();
+}
+function removePlayer(i){players.splice(i,1);renderPlayers();renderInlinePlayers();}
+function chScore(i,d){players[i].score=Math.max(0,players[i].score+d);renderPlayers();renderInlinePlayers();}
+function resetScores(){players.forEach(p=>p.score=0);renderPlayers();renderInlinePlayers();}
+function clearAll(){players=[];renderPlayers();renderInlinePlayers();}
+
+function renderPlayers(){
+  const el=document.getElementById('plist');
+  if(!players.length){
+    el.innerHTML='<div class="empty"><div class="big">🎤</div>Aucun joueur.<br>Ajoute des joueurs pour commencer !</div>';
+    document.getElementById('podcard').style.display='none';return;
+  }
+  el.innerHTML=players.map((p,i)=>{const c=PC[i%PC.length];return`
+    <div class="prow" style="background:${c.bg};border:1px solid ${c.bd}">
+      <div class="pav" style="background:${c.av}">${ini(p.name)}</div>
+      <div class="pname" style="color:${c.tx}">${p.name}</div>
+      <div class="pctrl">
+        <button class="psb pm" onclick="chScore(${i},-1)">−</button>
+        <div class="pscore" style="color:${c.tx}">${p.score}</div>
+        <button class="psb pp" onclick="chScore(${i},1)">+</button>
+      </div>
+      <button class="del" onclick="removePlayer(${i})">✕</button>
+    </div>`;}).join('');
+  renderPodium();
+}
+
+function renderPodium(){
+  if(players.length<2){document.getElementById('podcard').style.display='none';return;}
+  document.getElementById('podcard').style.display='block';
+  const sorted=[...players].map((p,i)=>({...p,ci:i})).sort((a,b)=>b.score-a.score);
+  const md=['🥇','🥈','🥉'];
+  document.getElementById('podlist').innerHTML=sorted.map((p,r)=>{const c=PC[p.ci%PC.length];return`
+    <div class="podrow" style="background:${c.bg};border:1px solid ${c.bd}">
+      <div class="podrank">${md[r]||'#'+(r+1)}</div>
+      <div class="podname" style="color:${c.tx}">${p.name}</div>
+      <div class="podpts" style="color:${c.tx}">${p.score} pt${p.score!==1?'s':''}</div>
+    </div>`;}).join('');
+}
+
+function renderInlinePlayers(){
+  const el = document.getElementById('inline-players-list');
+  const wrap = document.getElementById('inline-scores');
+  if (!players.length) {
+    el.innerHTML = '<span class="inline-empty">Aucun joueur — <span onclick="goScores()">ajoute des joueurs ici</span></span>';
+    wrap.classList.remove('has-players');
+    return;
+  }
+  wrap.classList.add('has-players');
+  el.innerHTML = players.map((p, i) => {
+    const c = PC[i % PC.length];
+    return `
+    <div class="inline-prow" style="background:${c.bg};border-color:${c.bd}">
+      <div class="inline-pav" style="background:${c.av}">${ini(p.name)}</div>
+      <div class="inline-pname" style="color:${c.tx}">${p.name}</div>
+      <div class="inline-ctrl">
+        <button class="isb im" onclick="chScore(${i},-1);renderInlinePlayers()">−</button>
+        <div class="inline-score" style="color:${c.tx}">${p.score}</div>
+        <button class="isb ip" onclick="chScore(${i},1);renderInlinePlayers()">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
