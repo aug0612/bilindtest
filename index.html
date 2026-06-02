@@ -3,1015 +3,602 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🦄 BlindTest</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦄</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<title>🦄 UniBlind</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #07060f;
-  --surface: #0f0e1d;
-  --card: #151428;
-  --card2: #1c1a32;
-  --accent: #c084fc;
-  --accent2: #f472b6;
-  --accent3: #38bdf8;
-  --gold: #fbbf24;
-  --text: #f0eeff;
-  --muted: #5e5c7a;
-  --correct: #34d399;
-  --wrong: #f87171;
-  --radius: 22px;
-  --rsm: 13px;
-  --glow: 0 0 40px rgba(192,132,252,0.2);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden;}
+:root{--g:rgba(255,255,255,.11);--gb:rgba(255,255,255,.22);--gs:rgba(255,255,255,.38);--blur:22px;--r:20px;--mu:rgba(255,255,255,.5);--ac:#c4b5fd;--ac2:#f9a8d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;font-family:'Outfit',sans-serif;color:#fff;overflow-x:hidden;background:#0d0020}
+.bg{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 10% 10%,#7c3aed 0%,transparent 55%),
+    radial-gradient(ellipse 60% 70% at 90% 20%,#db2777 0%,transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% 90%,#0ea5e9 0%,transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 70%,#f59e0b 0%,transparent 45%),#0d0020;
+  animation:bgS 12s ease-in-out infinite alternate}
+@keyframes bgS{0%{filter:hue-rotate(0deg) brightness(.9)}50%{filter:hue-rotate(20deg) brightness(1.05)}100%{filter:hue-rotate(-15deg) brightness(.95)}}
+.bg::after{content:'';position:absolute;inset:0;opacity:.28;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
 
-/* ── BG MESH ── */
-.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.bg-mesh::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 10% 5%, rgba(192,132,252,0.14) 0%,transparent 55%),
-             radial-gradient(ellipse 60% 70% at 90% 90%, rgba(244,114,182,0.11) 0%,transparent 55%),
-             radial-gradient(ellipse 50% 50% at 55% 50%, rgba(56,189,248,0.06) 0%,transparent 55%);
-  animation:meshShift 14s ease-in-out infinite alternate;}
-@keyframes meshShift{0%{filter:hue-rotate(0deg) brightness(1);}100%{filter:hue-rotate(18deg) brightness(1.05);}}
-.bg-mesh::after{content:'';position:absolute;inset:0;
-  background-image:radial-gradient(1.5px 1.5px at 8% 15%,rgba(192,132,252,.5) 0%,transparent 100%),
-    radial-gradient(1px 1px at 25% 65%,rgba(255,255,255,.25) 0%,transparent 100%),
-    radial-gradient(2px 2px at 45% 8%,rgba(244,114,182,.4) 0%,transparent 100%),
-    radial-gradient(1px 1px at 65% 45%,rgba(255,255,255,.2) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 82% 22%,rgba(56,189,248,.5) 0%,transparent 100%),
-    radial-gradient(1px 1px at 18% 88%,rgba(255,255,255,.3) 0%,transparent 100%),
-    radial-gradient(2px 2px at 72% 78%,rgba(192,132,252,.35) 0%,transparent 100%),
-    radial-gradient(1px 1px at 55% 92%,rgba(244,114,182,.3) 0%,transparent 100%),
-    radial-gradient(1px 1px at 92% 55%,rgba(255,255,255,.2) 0%,transparent 100%);}
+.glass{background:var(--g);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);
+  border:1px solid var(--gb);border-radius:var(--r);
+  box-shadow:0 8px 32px rgba(0,0,0,.28),inset 0 1px 0 var(--gs),inset 0 -1px 0 rgba(0,0,0,.1);
+  position:relative;overflow:hidden}
+.glass::before{content:'';position:absolute;top:0;left:-60%;width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);transform:skewX(-15deg);pointer-events:none}
 
-/* ── SCREENS ── */
-.screen{display:none;position:relative;z-index:1;min-height:100vh;}
-.screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;animation:fadeIn .4s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.wrap{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:1.5rem 1.2rem 5rem}
 
-/* ── LOGO ── */
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.6rem,9vw,5rem);letter-spacing:-.02em;
-  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 45%,var(--accent3) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-align:center;animation:logoPulse 4s ease-in-out infinite;}
-@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 18px rgba(192,132,252,.4))}50%{filter:drop-shadow(0 0 35px rgba(244,114,182,.55))}}
-.logo-sub{font-size:.76rem;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;text-align:center;margin-top:-.2rem;}
-.logo-uni{font-size:clamp(2.2rem,7vw,4rem);text-align:center;display:block;animation:float 3.2s ease-in-out infinite;margin-bottom:-.4rem;}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+/* HEADER */
+header{display:flex;flex-direction:column;align-items:center;padding:2rem 0 1.2rem;text-align:center}
+.uni{font-size:3.8rem;line-height:1;margin-bottom:.3rem;
+  filter:drop-shadow(0 0 28px rgba(219,39,119,.65)) drop-shadow(0 0 55px rgba(124,58,237,.45));
+  animation:fl 4s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+.stitle{font-family:'Playfair Display',serif;font-size:clamp(2rem,5.5vw,3.8rem);font-weight:900;
+  background:linear-gradient(135deg,#fff 0%,#f9a8d4 30%,#c4b5fd 60%,#93c5fd 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1;margin-bottom:.3rem}
+.stag{font-size:.83rem;font-weight:300;color:var(--mu);letter-spacing:.25em;text-transform:uppercase}
 
-/* ── CARDS ── */
-.card{background:var(--card);border:1px solid rgba(192,132,252,.1);border-radius:var(--radius);padding:2rem;width:100%;max-width:600px;
-  backdrop-filter:blur(16px);box-shadow:0 10px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);margin-bottom:1rem;}
-.card-glow{box-shadow:var(--glow),0 10px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);}
+/* TABS */
+.tabs{display:flex;gap:.45rem;margin:1.4rem auto 0;justify-content:center}
+.tab{padding:.5rem 1.3rem;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--mu);
+  backdrop-filter:blur(10px);transition:all .2s;letter-spacing:.03em}
+.tab:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.tab.on{background:rgba(196,165,253,.2);border-color:var(--ac);color:var(--ac);box-shadow:0 0 16px rgba(196,165,253,.16)}
 
-/* ── TYPOGRAPHY ── */
-h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1.3rem;letter-spacing:.03em;color:var(--accent);margin-bottom:1.1rem;display:flex;align-items:center;gap:.5rem;}
+.screen{display:none}.screen.on{display:block}
 
-/* ── INPUTS ── */
-.input-row{display:flex;gap:.6rem;margin-bottom:.8rem;align-items:center;}
-.input-grid{display:grid;gap:.6rem;margin-bottom:.8rem;}
-input[type="text"],select{flex:1;width:100%;background:var(--surface);border:1.5px solid rgba(192,132,252,.13);
-  border-radius:var(--rsm);padding:.8rem 1rem;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.93rem;outline:none;transition:all .2s;}
-input[type="text"]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,132,252,.14);background:rgba(21,20,40,.9);}
-input[type="text"]::placeholder{color:var(--muted);}
-select option{background:var(--card);color:var(--text);}
+/* ══ RECO SCREEN ══ */
+.qsec{margin-top:1.8rem;display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+.qcard{width:100%;max-width:660px;padding:1.7rem 2rem}
+.qlbl{font-size:.68rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:rgba(196,165,253,.78);margin-bottom:.45rem}
+.qtxt{font-family:'Playfair Display',serif;font-size:clamp(1.05rem,2.8vw,1.45rem);font-weight:700;margin-bottom:1.2rem;line-height:1.3}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.55rem}
+.cbtn{padding:.82rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:.86rem;font-weight:500;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.48rem;
+  backdrop-filter:blur(8px);text-align:left;position:relative;overflow:hidden}
+.cbtn:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.3);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.cbtn.sel{background:rgba(196,165,253,.2);border-color:rgba(196,165,253,.58);box-shadow:0 0 16px rgba(196,165,253,.18),inset 0 1px 0 rgba(255,255,255,.28)}
+.em{font-size:1.1rem}
+.ctabtn{padding:.9rem 2.1rem;background:linear-gradient(135deg,rgba(196,165,253,.28),rgba(244,114,182,.25));
+  border:1px solid rgba(196,165,253,.38);border-radius:50px;color:#fff;font-family:'Outfit',sans-serif;
+  font-size:.92rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
+  backdrop-filter:blur(12px);box-shadow:0 8px 22px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.28);
+  transition:all .25s;display:none}
+.ctabtn.vis{display:inline-flex;align-items:center;gap:.42rem}
+.ctabtn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 14px 34px rgba(0,0,0,.4)}
 
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.8rem 1.6rem;border-radius:var(--rsm);border:none;cursor:pointer;
-  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.88rem;transition:all .22s cubic-bezier(.34,1.56,.64,1);
-  text-transform:uppercase;letter-spacing:.06em;position:relative;overflow:hidden;white-space:nowrap;}
-.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s;}
-.btn:hover::after{background:rgba(255,255,255,.07);}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#07060f;box-shadow:0 4px 22px rgba(192,132,252,.35);}
-.btn-primary:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 28px rgba(192,132,252,.55);}
-.btn-ghost{background:transparent;border:1.5px solid rgba(192,132,252,.18);color:var(--muted);}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
-.btn-danger{background:linear-gradient(135deg,var(--accent2),#e11d48);color:#fff;box-shadow:0 4px 22px rgba(244,114,182,.35);}
-.btn-danger:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 28px rgba(244,114,182,.5);}
-.btn-success{background:linear-gradient(135deg,var(--correct),#059669);color:#fff;box-shadow:0 4px 22px rgba(52,211,153,.35);}
-.btn-success:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(52,211,153,.5);}
-.btn-ai{background:linear-gradient(135deg,#6366f1,#8b5cf6,#c084fc);color:#fff;box-shadow:0 4px 22px rgba(139,92,246,.4);}
-.btn-ai:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 28px rgba(139,92,246,.6);}
-.btn-sm{padding:.46rem .85rem;font-size:.76rem;border-radius:9px;}
-.btn-icon{width:34px;height:34px;padding:0;border-radius:8px;font-size:.95rem;}
-.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+#rr{display:none;margin-top:1.8rem}
+.rh{text-align:center;margin-bottom:1.6rem}
+.rh h2{font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3.5vw,2rem);font-weight:900;
+  background:linear-gradient(135deg,#fff,#c4b5fd,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.rh p{color:var(--mu);font-size:.82rem}
 
-/* ── PLAYER TAGS ── */
-.player-list{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0;min-height:2rem;}
-.player-tag{background:var(--surface);border:1.5px solid rgba(192,132,252,.1);border-radius:30px;padding:.35rem .6rem .35rem .9rem;
-  font-size:.84rem;display:flex;align-items:center;gap:.5rem;transition:all .2s;animation:popIn .3s cubic-bezier(.34,1.56,.64,1);}
-@keyframes popIn{from{transform:scale(.65);opacity:0}to{transform:scale(1);opacity:1}}
-.player-tag:hover{border-color:var(--accent2);}
-.player-tag .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.player-tag button{background:rgba(244,114,182,.14);border:none;color:var(--muted);cursor:pointer;font-size:.68rem;
-  padding:.14rem .32rem;line-height:1;border-radius:50%;transition:all .2s;}
-.player-tag button:hover{background:var(--wrong);color:#fff;}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.3rem}
+.vcard{cursor:pointer;transition:all .25s}
+.vcard:hover{transform:translateY(-4px)}
+.vcard:hover .vci{border-color:rgba(255,255,255,.36);box-shadow:0 18px 42px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.38)}
+.vci{overflow:hidden;border-radius:var(--r);border:1px solid var(--gb);background:var(--g);
+  backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));
+  box-shadow:0 8px 28px rgba(0,0,0,.25),inset 0 1px 0 var(--gs);transition:all .25s}
+.vthumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:rgba(0,0,0,.3)}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.vcard:hover .vthumb img{transform:scale(1.05)}
+.vplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.18);transition:background .2s}
+.vcard:hover .vplay{background:rgba(0,0,0,.04)}
+.vpc{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);
+  border:2px solid rgba(255,255,255,.46);display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .2s}
+.vcard:hover .vpc{transform:scale(1.1)}
+.vbadge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.52);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:.16rem .45rem;font-size:.66rem;font-weight:600;color:#fff}
+.vbody{padding:.85rem 1.05rem 1.05rem}
+.vtag{font-size:.64rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(196,165,253,.82);margin-bottom:.25rem}
+.vtitle{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;line-height:1.32;margin-bottom:.3rem;color:#fff}
+.vmeta{font-size:.72rem;color:var(--mu)}
 
-/* ── EPOCH PICKER ── */
-.epoch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin:.8rem 0;}
-.epoch-btn{background:var(--surface);border:1.5px solid rgba(192,132,252,.1);border-radius:12px;padding:.6rem .5rem;
-  cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);
-  text-align:center;transition:all .22s cubic-bezier(.34,1.56,.64,1);line-height:1.3;}
-.epoch-btn .era-icon{display:block;font-size:1.3rem;margin-bottom:.3rem;}
-.epoch-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);}
-.epoch-btn.selected{border-color:var(--accent);background:rgba(192,132,252,.12);color:var(--accent);
-  box-shadow:0 0 16px rgba(192,132,252,.2);transform:translateY(-2px);}
+.rbtn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:50px;
+  padding:.5rem 1.4rem;color:var(--mu);font-family:'Outfit',sans-serif;font-size:.81rem;cursor:pointer;
+  backdrop-filter:blur(8px);transition:all .2s;display:block;margin:1.6rem auto 0}
+.rbtn:hover{color:#fff;border-color:rgba(255,255,255,.28)}
 
-/* ── GENRE PICKER ── */
-.genre-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0;}
-.genre-tag{background:var(--surface);border:1.5px solid rgba(192,132,252,.1);border-radius:20px;padding:.35rem .9rem;
-  cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;}
-.genre-tag:hover{border-color:var(--accent2);color:var(--accent2);}
-.genre-tag.selected{border-color:var(--accent2);background:rgba(244,114,182,.12);color:var(--accent2);}
+/* ══ PLAYER MODAL (vidéo + scores) ══ */
+.overlay{display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;
+  padding:1rem;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  animation:fi .2s ease}
+.overlay.on{display:flex}
+@keyframes fi{from{opacity:0}to{opacity:1}}
 
-/* ── AI SEARCH PANEL ── */
-.ai-panel{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(192,132,252,.06));
-  border:1.5px solid rgba(139,92,246,.25);border-radius:var(--radius);padding:1.4rem;margin-bottom:1rem;}
-.ai-panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
-  background:linear-gradient(135deg,#6366f1,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
-.ai-loading{display:flex;align-items:center;gap:.8rem;color:var(--muted);font-size:.88rem;padding:.8rem 0;}
-.ai-loading .spinner{width:20px;height:20px;border:2px solid rgba(192,132,252,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.suggestion-list{display:flex;flex-direction:column;gap:.5rem;max-height:300px;overflow-y:auto;padding-right:3px;}
-.suggestion-list::-webkit-scrollbar{width:3px;}
-.suggestion-list::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
-.suggestion-item{background:var(--surface);border:1.5px solid rgba(192,132,252,.09);border-radius:12px;padding:.7rem 1rem;
-  display:flex;align-items:center;gap:.8rem;cursor:pointer;transition:all .2s;}
-.suggestion-item:hover{border-color:var(--accent);background:var(--card2);transform:translateX(3px);}
-.suggestion-item.added{border-color:var(--correct);background:rgba(52,211,153,.07);opacity:.7;cursor:default;transform:none!important;}
-.sug-num{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--accent);min-width:1.4rem;text-align:center;}
-.sug-info{flex:1;min-width:0;}
-.sug-title{font-weight:600;font-size:.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sug-artist{font-size:.75rem;color:var(--muted);}
-.sug-add{font-size:.75rem;font-weight:700;color:var(--correct);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);
-  border-radius:8px;padding:.2rem .55rem;white-space:nowrap;flex-shrink:0;}
-.sug-added-label{font-size:.72rem;color:var(--correct);flex-shrink:0;}
+.pmodal{width:100%;max-width:900px;padding:1.4rem;display:flex;flex-direction:column;gap:1.1rem}
 
-/* ── SONG LIST ── */
-.song-list{display:flex;flex-direction:column;gap:.5rem;margin:1rem 0;max-height:300px;overflow-y:auto;padding-right:3px;}
-.song-list::-webkit-scrollbar{width:3px;}
-.song-list::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
-.song-item{background:var(--surface);border:1.5px solid rgba(192,132,252,.08);border-radius:var(--rsm);
-  padding:.7rem .9rem;display:flex;align-items:center;gap:.7rem;transition:all .2s;animation:slideIn .28s ease;}
-@keyframes slideIn{from{transform:translateX(-8px);opacity:0}to{transform:none;opacity:1}}
-.song-item:hover{border-color:rgba(192,132,252,.22);background:var(--card2);}
-.song-num{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--accent);min-width:1.5rem;text-align:center;
-  background:rgba(192,132,252,.1);border-radius:6px;padding:.1rem .25rem;}
-.song-info{flex:1;min-width:0;}
-.song-title-text{font-weight:600;color:var(--text);font-size:.87rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.song-artist-text{color:var(--muted);font-size:.75rem;}
-.song-badge{font-size:.62rem;background:rgba(56,189,248,.13);color:var(--accent3);border:1px solid rgba(56,189,248,.22);
-  border-radius:6px;padding:.1rem .38rem;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;}
+/* yt player */
+.ytbox{position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:14px;overflow:hidden;
+  box-shadow:0 16px 50px rgba(0,0,0,.5);background:#000}
+.ytbox iframe,.ytbox #yt-player{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:14px}
 
-/* ── SCOREBOARD ── */
-.scoreboard{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:.5rem;}
-.score-card{background:var(--card);border:1.5px solid rgba(192,132,252,.1);border-radius:14px;padding:.75rem 1.1rem;
-  text-align:center;min-width:88px;transition:all .3s;position:relative;overflow:hidden;}
-.score-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--dot-color,var(--accent));opacity:.55;}
-.score-card.leading{border-color:var(--gold);box-shadow:0 0 22px rgba(251,191,36,.22);}
-.score-card .name{font-size:.67rem;color:var(--muted);margin-bottom:.18rem;text-transform:uppercase;letter-spacing:.05em;}
-.score-card .pts{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--accent);line-height:1;}
-.score-card .pts.just-scored{animation:scoreUp .6s cubic-bezier(.34,1.56,.64,1);}
-@keyframes scoreUp{0%{transform:scale(1)}50%{transform:scale(1.55);color:var(--gold)}100%{transform:scale(1)}}
+/* scores inside modal */
+.modal-bottom{display:flex;flex-direction:column;gap:.9rem}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.modal-vtitle{font-family:'Playfair Display',serif;font-size:clamp(.9rem,2.5vw,1.2rem);font-weight:700;
+  line-height:1.28;flex:1;color:#fff}
+.cls{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.9rem;color:#fff;transition:all .2s;flex-shrink:0}
+.cls:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
 
-/* ── PROGRESS ── */
-.round-info{font-size:.73rem;color:var(--muted);text-align:center;letter-spacing:.12em;text-transform:uppercase;}
-.progress-bar{width:100%;max-width:580px;height:3px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:.45rem 0;}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;
-  transition:width .5s ease;box-shadow:0 0 8px rgba(192,132,252,.45);}
+/* inline score strip below video */
+.inline-scores{display:none;flex-direction:column;gap:.6rem;margin-top:.5rem}
+.inline-scores.has-players{display:flex}
+.inline-scores-label{font-size:.64rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(196,165,253,.75);margin-bottom:.1rem}
+.inline-players{display:flex;flex-wrap:wrap;gap:.45rem}
+.inline-prow{display:flex;align-items:center;gap:.45rem;padding:.42rem .7rem;border-radius:10px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);transition:all .2s}
+.inline-prow:hover{background:rgba(255,255,255,.12)}
+.inline-pav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;flex-shrink:0;color:#fff}
+.inline-pname{font-size:.8rem;font-weight:600;min-width:40px}
+.inline-score{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;min-width:1.8rem;text-align:center}
+.inline-ctrl{display:flex;gap:.28rem}
+.isb{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;line-height:1}
+.isb:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+.isb.ip:hover{background:rgba(196,165,253,.35);border-color:var(--ac)}
+.isb.im:hover{background:rgba(244,114,182,.3);border-color:var(--ac2)}
+.inline-empty{font-size:.8rem;color:var(--mu);padding:.3rem .1rem}
+.inline-empty span{color:rgba(196,165,253,.7);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.inline-empty span:hover{color:var(--ac)}
 
-/* ── AUDIO PLAYER ── */
-.audio-player{background:var(--card);border:1.5px solid rgba(192,132,252,.1);border-radius:var(--radius);padding:1.8rem;
-  width:100%;max-width:580px;text-align:center;box-shadow:var(--glow);}
-.waveform{display:flex;align-items:center;justify-content:center;gap:4px;height:46px;margin-bottom:1rem;}
-.waveform-bar{width:5px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:3px;animation:wave 1.2s ease-in-out infinite;opacity:.8;}
-.waveform.paused .waveform-bar{animation-play-state:paused;opacity:.2;}
-@keyframes wave{0%,100%{height:5px}50%{height:38px}}
-#media-container{width:100%;}
-#media-container audio{width:100%;margin-top:.5rem;accent-color:var(--accent);}
-#media-container iframe{width:100%;border-radius:10px;border:none;}
+/* players inside modal - kept for compatibility */
 
-/* ── TIMER ── */
-.timer-ring{position:relative;width:68px;height:68px;margin:0 auto .9rem;}
-.timer-ring svg{transform:rotate(-90deg);}
-.timer-ring-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:5;}
-.timer-ring-fill{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
-.timer-ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--accent);}
-.timer-ring.urgent .timer-ring-fill{stroke:var(--wrong);}
-.timer-ring.urgent .timer-ring-text{color:var(--wrong);animation:urgentPulse .5s ease-in-out infinite;}
-@keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ══ SCORES SCREEN ══ */
+.sscreen{max-width:740px;margin:1.8rem auto 0}
+.stitle2{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--ac);margin-bottom:.9rem}
+.apr{display:flex;gap:.55rem;margin-bottom:1.1rem}
+.apr input{flex:1;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.17);
+  border-radius:11px;padding:.68rem .95rem;color:#fff;font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s}
+.apr input:focus{border-color:var(--ac)}
+.apr input::placeholder{color:var(--mu)}
 
-/* ── WINNER SELECTION ── */
-.winner-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:.75rem;margin:1.4rem 0;}
-.winner-btn{background:var(--surface);border:1.5px solid rgba(192,132,252,.1);color:var(--text);padding:.9rem;border-radius:14px;
-  cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.87rem;
-  transition:all .22s cubic-bezier(.34,1.56,.64,1);text-align:center;}
-.winner-btn .w-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
-.winner-btn.selected{border-color:var(--correct);background:rgba(52,211,153,.14);color:var(--correct);
-  transform:scale(1.05);box-shadow:0 0 18px rgba(52,211,153,.25);}
-.winner-btn:hover:not(.selected){border-color:var(--accent);background:rgba(192,132,252,.09);transform:scale(1.02);}
+.btn{display:inline-flex;align-items:center;gap:.38rem;padding:.6rem 1.2rem;border-radius:50px;
+  font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;letter-spacing:.04em}
+.bprim{background:linear-gradient(135deg,rgba(196,165,253,.28),rgba(244,114,182,.22));
+  border-color:rgba(196,165,253,.38);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.18)}
+.bprim:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.bgh{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:var(--mu)}
+.bgh:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.bdng{background:rgba(239,68,68,.13);border-color:rgba(239,68,68,.32);color:#fca5a5}
+.bdng:hover{background:rgba(239,68,68,.26)}
 
-/* ── REVEAL ── */
-.reveal-card{background:var(--card);border:1.5px solid rgba(192,132,252,.18);border-radius:var(--radius);padding:2.4rem;
-  width:100%;max-width:580px;text-align:center;box-shadow:var(--glow),0 20px 60px rgba(0,0,0,.5);}
-.reveal-song{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.7rem,6vw,2.8rem);
-  background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  line-height:1.1;animation:revealDrop .5s cubic-bezier(.34,1.56,.64,1);}
-@keyframes revealDrop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
-.reveal-artist{font-size:1rem;color:var(--muted);margin:.5rem 0 1.4rem;}
+.plist{display:flex;flex-direction:column;gap:.62rem;margin-bottom:1.3rem}
+.prow{display:flex;align-items:center;gap:.75rem;padding:.82rem 1.05rem;border-radius:13px}
+.pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;flex-shrink:0;color:#fff}
+.pname{flex:1;font-weight:600;font-size:.9rem}
+.pscore{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;min-width:2.4rem;text-align:center}
+.pctrl{display:flex;gap:.32rem}
+.psb{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;line-height:1}
+.psb:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+.psb.pp:hover{background:rgba(196,165,253,.35);border-color:var(--ac)}
+.psb.pm:hover{background:rgba(244,114,182,.3);border-color:var(--ac2)}
+.del{width:26px;height:26px;border-radius:50%;border:none;background:rgba(255,255,255,.07);
+  color:var(--mu);font-size:.76rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.del:hover{background:rgba(239,68,68,.3);color:#fff}
 
-/* ── PODIUM ── */
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:1rem;margin:1.4rem 0;}
-.podium-item{display:flex;flex-direction:column;align-items:center;gap:.45rem;}
-.podium-block{width:82px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--bg);}
-.podium-name{font-size:.76rem;color:var(--muted);text-align:center;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.podium-pts{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--accent);}
-.podium-trophy{font-size:1.5rem;}
-.results-list{display:flex;flex-direction:column;gap:.45rem;}
-.result-row{display:flex;align-items:center;gap:.75rem;background:var(--surface);border:1px solid rgba(192,132,252,.07);
-  border-radius:var(--rsm);padding:.75rem 1rem;font-size:.88rem;transition:all .2s;}
-.result-row:hover{border-color:rgba(192,132,252,.18);}
-.result-rank{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--muted);min-width:1.4rem;text-align:center;}
-.result-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.result-name{flex:1;font-weight:600;}
-.result-pts{font-family:'Syne',sans-serif;font-weight:700;font-size:1.25rem;color:var(--accent);}
+.empty{text-align:center;padding:2.2rem 1rem;color:var(--mu);font-size:.87rem}
+.empty .big{font-size:2.3rem;margin-bottom:.5rem}
 
-/* ── MISC ── */
-.divider{border:none;border-top:1px solid rgba(192,132,252,.09);margin:1.3rem 0;}
-.flex-row{display:flex;gap:.6rem;align-items:center;}
-.flex-end{justify-content:flex-end;}
-.flex-between{justify-content:space-between;}
-.flex-center{justify-content:center;}
-.mt{margin-top:1rem;}
-.tip{font-size:.76rem;color:var(--muted);margin-top:.4rem;padding:.45rem .65rem;background:rgba(56,189,248,.05);border-left:2px solid var(--accent3);border-radius:0 6px 6px 0;}
-.count-badge{background:var(--accent);color:var(--bg);font-size:.68rem;font-weight:700;padding:.08rem .45rem;border-radius:20px;margin-left:.35rem;}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;}
-.timer-config{display:flex;align-items:center;gap:.8rem;font-size:.84rem;color:var(--muted);}
-.timer-config label{display:flex;align-items:center;gap:.4rem;cursor:pointer;}
-.timer-config input[type="checkbox"]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
-.timer-config select{flex:none;width:auto;padding:.28rem .55rem;font-size:.8rem;}
-.empty-state{color:var(--muted);font-size:.84rem;text-align:center;padding:1.4rem 0;}
-.empty-state .icon{font-size:1.8rem;margin-bottom:.4rem;display:block;opacity:.35;}
-#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card2);
-  border:1.5px solid rgba(192,132,252,.28);color:var(--text);padding:.75rem 1.4rem;border-radius:30px;font-size:.88rem;font-weight:600;
-  z-index:1000;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.4);text-align:center;max-width:90vw;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-#screen-game{gap:1rem;}
+.podcard{margin-top:1.4rem}
+.podrow{display:flex;align-items:center;gap:.7rem;padding:.7rem 1.05rem;border-radius:13px;margin-bottom:.45rem}
+.podrank{font-size:1.2rem;min-width:1.9rem;text-align:center}
+.podname{flex:1;font-weight:600}
+.podpts{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700}
 
-/* ── TABS ── */
-.tabs{display:flex;gap:.4rem;background:var(--surface);border-radius:12px;padding:.3rem;margin-bottom:1.2rem;}
-.tab-btn{flex:1;padding:.5rem;border:none;border-radius:9px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.8rem;
-  background:transparent;color:var(--muted);transition:all .2s;}
-.tab-btn.active{background:var(--card2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.arow{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
 
-@media(max-width:480px){
-  .card{padding:1.25rem;}
-  .podium-block{width:60px;}
-  .winner-select-grid{grid-template-columns:1fr 1fr;}
-  .audio-player{padding:1.3rem;}
-  .epoch-grid{grid-template-columns:repeat(3,1fr);}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:3px}
+
+@media(max-width:540px){
+  .qcard{padding:1.2rem}
+  .choices{grid-template-columns:1fr 1fr}
+  .vgrid{grid-template-columns:1fr}
+  .pmodal{padding:.9rem;gap:.8rem}
+  .mplayers{gap:.4rem}
 }
 </style>
 </head>
 <body>
-<div class="bg-mesh"></div>
-<canvas id="confetti-canvas"></canvas>
-<div id="toast" class="toast"></div>
+<div class="bg"></div>
 
-<!-- ══════════════════════════════ ACCUEIL ══════════════════════════════ -->
-<div id="screen-home" class="screen active">
-  <div style="text-align:center;margin-bottom:2rem;">
-    <span class="logo-uni">🦄</span>
-    <div class="logo">BlindTest</div>
-    <div class="logo-sub">Qui connaît le mieux la musique ?</div>
-  </div>
-  <div class="card card-glow">
-    <h2>🎮 Joueurs <span id="player-count" class="count-badge" style="display:none">0</span></h2>
-    <div class="input-row">
-      <input type="text" id="player-input" placeholder="Nom du joueur..." maxlength="20" autocomplete="off">
-      <button class="btn btn-primary btn-sm" onclick="addPlayer()">+ Ajouter</button>
+<!-- ══════════ MODAL VIDÉO + SCORES ══════════ -->
+<div class="overlay" id="overlay">
+  <div class="pmodal glass">
+
+    <!-- YouTube IFrame API player -->
+    <div class="ytbox" id="ytbox">
+      <div id="yt-player"></div>
     </div>
-    <div class="player-list" id="player-list">
-      <div class="empty-state"><span class="icon">👤</span>Ajoute au moins 2 joueurs</div>
+
+    <!-- Points directement sous la vidéo -->
+    <div class="inline-scores" id="inline-scores">
+      <div class="inline-scores-label">🏆 Points en direct</div>
+      <div class="inline-players" id="inline-players-list">
+        <span class="inline-empty">Aucun joueur — <span onclick="goScores()">ajoute des joueurs ici</span></span>
+      </div>
     </div>
-    <div class="tip">2 à 8 joueurs · Entrée pour ajouter rapidement</div>
-    <hr class="divider">
-    <div class="flex-row flex-end">
-      <button class="btn btn-primary" id="btn-next-setup" onclick="goSetup()" disabled>Configurer les chansons →</button>
+
+    <!-- titre + fermer -->
+    <div class="modal-hdr" style="margin-top:.2rem">
+      <div class="modal-vtitle" id="mvtitle"></div>
+      <button class="cls" onclick="closeOverlay()">✕</button>
     </div>
+
   </div>
 </div>
 
-<!-- ══════════════════════════════ SETUP ══════════════════════════════ -->
-<div id="screen-setup" class="screen">
-  <div style="text-align:center;margin-bottom:1.3rem;">
-    <span style="font-size:1.8rem;">🦄</span>
-    <div class="logo" style="font-size:2rem;">BlindTest</div>
+<!-- ══════════ MAIN ══════════ -->
+<div class="wrap">
+  <header>
+    <div class="uni">🦄</div>
+    <div class="stitle">UniBlind</div>
+    <div class="stag">Trouve ton blind test parfait</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('reco',this)">🎵 Recommandations</button>
+    <button class="tab" onclick="switchTab('scores',this)">🏆 Joueurs & Scores</button>
   </div>
-  <div class="card" style="max-width:660px;">
 
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab-btn active" id="tab-ai" onclick="switchTab('ai')">✨ Suggestions IA</button>
-      <button class="tab-btn" id="tab-manual" onclick="switchTab('manual')">✏️ Ajout Manuel</button>
-    </div>
+  <!-- ══ SCREEN RECO ══ -->
+  <div id="screen-reco" class="screen on">
 
-    <!-- ─── TAB : SUGGESTIONS IA ─── -->
-    <div id="panel-ai">
-      <div class="ai-panel">
-        <div class="ai-panel-title">✨ Générateur de playlist IA</div>
-
-        <div style="margin-bottom:.9rem;">
-          <div style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">📅 Époque</div>
-          <div class="epoch-grid" id="epoch-grid">
-            <div class="epoch-btn" data-era="60s-70s" onclick="toggleEra(this)"><span class="era-icon">🕺</span>60s–70s</div>
-            <div class="epoch-btn" data-era="80s" onclick="toggleEra(this)"><span class="era-icon">📼</span>Années 80</div>
-            <div class="epoch-btn" data-era="90s" onclick="toggleEra(this)"><span class="era-icon">💾</span>Années 90</div>
-            <div class="epoch-btn" data-era="2000s" onclick="toggleEra(this)"><span class="era-icon">💿</span>Années 2000</div>
-            <div class="epoch-btn" data-era="2010s" onclick="toggleEra(this)"><span class="era-icon">📱</span>Années 2010</div>
-            <div class="epoch-btn" data-era="2020s" onclick="toggleEra(this)"><span class="era-icon">🔥</span>Années 2020</div>
-            <div class="epoch-btn" data-era="all" onclick="toggleEra(this)"><span class="era-icon">🌈</span>Toutes</div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:1rem;">
-          <div style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">🎸 Genre</div>
-          <div class="genre-grid" id="genre-grid">
-            <div class="genre-tag" data-genre="pop" onclick="toggleGenre(this)">🎵 Pop</div>
-            <div class="genre-tag" data-genre="rap" onclick="toggleGenre(this)">🎤 Rap / Urban</div>
-            <div class="genre-tag" data-genre="rock" onclick="toggleGenre(this)">🎸 Rock</div>
-            <div class="genre-tag" data-genre="french" onclick="toggleGenre(this)">🇫🇷 Français</div>
-            <div class="genre-tag" data-genre="electro" onclick="toggleGenre(this)">⚡ Électro</div>
-            <div class="genre-tag" data-genre="rnb" onclick="toggleGenre(this)">🎷 R&B / Soul</div>
-            <div class="genre-tag" data-genre="disney" onclick="toggleGenre(this)">🏰 Disney / Films</div>
-            <div class="genre-tag" data-genre="latin" onclick="toggleGenre(this)">💃 Latin</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
-          <button class="btn btn-ai btn-sm" onclick="generateSuggestions()" id="btn-generate">
-            ✨ Générer des suggestions
-          </button>
-          <div style="font-size:.75rem;color:var(--muted);">Propulsé par Claude IA</div>
+    <div class="qsec" id="qs">
+      <div class="glass qcard" id="q1">
+        <div class="qlbl">Question 1 / 3</div>
+        <div class="qtxt">Quelle est l'ambiance de ta soirée ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('mood','famille')" data-k="mood" data-v="famille"><span class="em">👨‍👩‍👧</span>En famille</button>
+          <button class="cbtn" onclick="pick('mood','amis')" data-k="mood" data-v="amis"><span class="em">🥂</span>Entre amis</button>
+          <button class="cbtn" onclick="pick('mood','solo')" data-k="mood" data-v="solo"><span class="em">🎧</span>Solo / défi</button>
+          <button class="cbtn" onclick="pick('mood','enfants')" data-k="mood" data-v="enfants"><span class="em">🧒</span>Avec enfants</button>
         </div>
       </div>
 
-      <!-- Results -->
-      <div id="ai-results" style="display:none;">
-        <div class="section-header">
-          <div style="font-size:.85rem;color:var(--accent);font-weight:600;" id="ai-results-title">Suggestions</div>
-          <button class="btn btn-ghost btn-sm" onclick="addAllSuggestions()">+ Tout ajouter</button>
+      <div class="glass qcard" id="q2" style="opacity:.38;pointer-events:none;transition:opacity .4s">
+        <div class="qlbl">Question 2 / 3</div>
+        <div class="qtxt">Quel genre de musique vous branche ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('genre','pop')" data-k="genre" data-v="pop"><span class="em">🎤</span>Pop / Variété</button>
+          <button class="cbtn" onclick="pick('genre','rock')" data-k="genre" data-v="rock"><span class="em">🎸</span>Rock</button>
+          <button class="cbtn" onclick="pick('genre','gaming')" data-k="genre" data-v="gaming"><span class="em">🎮</span>Jeux vidéo</button>
+          <button class="cbtn" onclick="pick('genre','films')" data-k="genre" data-v="films"><span class="em">🎬</span>Films / Séries</button>
+          <button class="cbtn" onclick="pick('genre','disney')" data-k="genre" data-v="disney"><span class="em">✨</span>Disney / Animés</button>
+          <button class="cbtn" onclick="pick('genre','tout')" data-k="genre" data-v="tout"><span class="em">🎵</span>Tout genre</button>
         </div>
-        <div class="suggestion-list" id="suggestion-list"></div>
       </div>
-      <div id="ai-loading" class="ai-loading" style="display:none;">
-        <div class="spinner"></div>
-        <span id="ai-loading-text">L'IA cherche les meilleures chansons…</span>
+
+      <div class="glass qcard" id="q3" style="opacity:.38;pointer-events:none;transition:opacity .4s">
+        <div class="qlbl">Question 3 / 3</div>
+        <div class="qtxt">Quelle époque vous parle le plus ?</div>
+        <div class="choices">
+          <button class="cbtn" onclick="pick('era','80s')" data-k="era" data-v="80s"><span class="em">📼</span>Années 80</button>
+          <button class="cbtn" onclick="pick('era','90s')" data-k="era" data-v="90s"><span class="em">💿</span>Années 90</button>
+          <button class="cbtn" onclick="pick('era','2000s')" data-k="era" data-v="2000s"><span class="em">📱</span>Années 2000</button>
+          <button class="cbtn" onclick="pick('era','2010s')" data-k="era" data-v="2010s"><span class="em">🎙️</span>Années 2010+</button>
+          <button class="cbtn" onclick="pick('era','all')" data-k="era" data-v="all"><span class="em">🌀</span>Toutes générations</button>
+        </div>
       </div>
+
+      <button class="ctabtn" id="ctabtn" onclick="showResults()">🦄 Voir mes recommandations →</button>
     </div>
 
-    <!-- ─── TAB : AJOUT MANUEL ─── -->
-    <div id="panel-manual" style="display:none;">
-      <div class="input-grid" style="grid-template-columns:1fr 1fr;">
-        <input type="text" id="song-title" placeholder="Titre *" autocomplete="off">
-        <input type="text" id="song-artist" placeholder="Artiste *" autocomplete="off">
+    <div id="rr">
+      <div class="rh">
+        <h2>Tes blind tests parfaits ✨</h2>
+        <p>Clique sur une vidéo pour la lancer dans le site</p>
       </div>
-      <div class="input-row">
-        <input type="text" id="song-url" placeholder="URL YouTube ou MP3 (optionnel)">
-      </div>
-      <div class="tip">💡 Si tu laisses l'URL vide, joue la chanson toi-même et clique Révéler.</div>
-      <div class="flex-row flex-end mt">
-        <button class="btn btn-primary btn-sm" onclick="addSong()">＋ Ajouter</button>
-      </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- SONG LIST -->
-    <div class="section-header">
-      <h2 style="margin-bottom:0;">📋 Playlist <span id="song-count" class="count-badge" style="display:none">0</span></h2>
-      <button class="btn btn-ghost btn-sm" onclick="clearAllSongs()" id="btn-clear-songs" style="display:none">🗑 Vider</button>
-    </div>
-    <div class="song-list" id="song-list">
-      <div class="empty-state"><span class="icon">🎶</span>Aucune chanson — génère des suggestions ou ajoute manuellement</div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="timer-config" style="margin-bottom:1rem;">
-      <label><input type="checkbox" id="timer-enabled" checked> ⏱ Minuteur</label>
-      <select id="timer-duration">
-        <option value="30">30 s</option>
-        <option value="45">45 s</option>
-        <option value="60" selected>60 s</option>
-        <option value="90">90 s</option>
-        <option value="120">2 min</option>
-      </select>
-    </div>
-
-    <div class="flex-row flex-between">
-      <button class="btn btn-ghost" onclick="goHome()">← Retour</button>
-      <button class="btn btn-primary" id="btn-start" onclick="startGame()" disabled>🎵 Lancer le BlindTest</button>
+      <div class="vgrid" id="vgrid"></div>
+      <button class="rbtn" onclick="resetReco()">← Changer mes préférences</button>
     </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════ JEU ══════════════════════════════ -->
-<div id="screen-game" class="screen">
-  <div class="round-info" id="round-info">Manche 1 / ?</div>
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  <div class="scoreboard" id="scoreboard"></div>
-  <div class="audio-player">
-    <div id="timer-ring-container" style="display:none">
-      <div class="timer-ring" id="timer-ring">
-        <svg width="68" height="68" viewBox="0 0 68 68">
-          <circle class="timer-ring-bg" cx="34" cy="34" r="29"/>
-          <circle class="timer-ring-fill" id="timer-ring-fill" cx="34" cy="34" r="29" stroke-dasharray="182.2" stroke-dashoffset="0"/>
-        </svg>
-        <div class="timer-ring-text" id="timer-ring-text">60</div>
+  <!-- ══ SCREEN SCORES ══ -->
+  <div id="screen-scores" class="screen">
+    <div class="sscreen">
+
+      <div class="glass qcard">
+        <div class="stitle2">Ajouter un joueur</div>
+        <div class="apr">
+          <input type="text" id="pinput" placeholder="Nom du joueur..." maxlength="20" onkeydown="if(event.key==='Enter')addPlayer()">
+          <button class="btn bprim" onclick="addPlayer()">+ Ajouter</button>
+        </div>
+        <div id="plist" class="plist">
+          <div class="empty"><div class="big">🎤</div>Aucun joueur.<br>Ajoute des joueurs pour commencer !</div>
+        </div>
+        <div class="arow">
+          <button class="btn bgh" onclick="resetScores()">↺ Réinitialiser scores</button>
+          <button class="btn bdng" onclick="clearAll()">🗑 Tout effacer</button>
+        </div>
       </div>
-    </div>
-    <div class="waveform" id="waveform">
-      <div class="waveform-bar" style="animation-delay:.00s;height:14px"></div>
-      <div class="waveform-bar" style="animation-delay:.15s;height:27px"></div>
-      <div class="waveform-bar" style="animation-delay:.30s;height:9px"></div>
-      <div class="waveform-bar" style="animation-delay:.45s;height:34px"></div>
-      <div class="waveform-bar" style="animation-delay:.60s;height:19px"></div>
-      <div class="waveform-bar" style="animation-delay:.75s;height:29px"></div>
-      <div class="waveform-bar" style="animation-delay:.90s;height:13px"></div>
-      <div class="waveform-bar" style="animation-delay:1.05s;height:24px"></div>
-    </div>
-    <div id="media-container"></div>
-    <div style="font-size:.73rem;color:var(--muted);margin-top:.7rem;letter-spacing:.09em;" id="song-hint-text"></div>
-  </div>
-  <div class="flex-row flex-center" style="gap:.8rem;">
-    <button class="btn btn-ghost btn-sm" onclick="skipSong()">⏭ Passer</button>
-    <button class="btn btn-danger" onclick="revealAnswer()">🎤 Révéler la réponse</button>
-  </div>
-</div>
 
-<!-- ══════════════════════════════ RÉVÉLATION ══════════════════════════════ -->
-<div id="screen-reveal" class="screen">
-  <div class="reveal-card">
-    <div style="font-size:.7rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.7rem;" id="reveal-round"></div>
-    <div class="reveal-song" id="reveal-title"></div>
-    <div class="reveal-artist" id="reveal-artist"></div>
-    <hr class="divider">
-    <h3 style="font-family:'Syne',sans-serif;font-size:.95rem;color:var(--accent);margin-bottom:.9rem;">
-      Qui a trouvé ? <span style="color:var(--muted);font-size:.77rem;">(jusqu'à 2 gagnants)</span>
-    </h3>
-    <div class="winner-select-grid" id="winner-selection-zone"></div>
-  </div>
-  <div class="flex-row mt flex-center" style="gap:.8rem;">
-    <button class="btn btn-ghost btn-sm" onclick="noWinner()">Personne n'a trouvé</button>
-    <button class="btn btn-success" onclick="validateWinnersAndNext()">Valider & Continuer →</button>
-  </div>
-</div>
+      <div class="glass qcard podcard" id="podcard" style="display:none">
+        <div class="stitle2">🏆 Classement</div>
+        <div id="podlist"></div>
+      </div>
 
-<!-- ══════════════════════════════ FIN ══════════════════════════════ -->
-<div id="screen-end" class="screen">
-  <div style="text-align:center;margin-bottom:1rem;">
-    <div style="font-size:2.8rem;animation:float 3s ease-in-out infinite;">🏆</div>
-    <div class="logo" style="font-size:2.8rem;">Résultats</div>
-    <div class="logo-sub">Fin du BlindTest !</div>
-  </div>
-  <div class="podium" id="podium"></div>
-  <div class="card" style="max-width:560px;margin-top:.5rem;">
-    <h2>📊 Classement</h2>
-    <div class="results-list" id="final-list"></div>
-    <hr class="divider">
-    <div class="flex-row flex-center" style="gap:.8rem;flex-wrap:wrap;">
-      <button class="btn btn-ghost" onclick="goHome()">← Nouvelle partie</button>
-      <button class="btn btn-primary" onclick="restartSame()">↺ Rejouer</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════
-const COLORS = ['#c084fc','#f472b6','#38bdf8','#a78bfa','#34d399','#fb923c','#facc15','#f87171'];
-let players=[], songs=[], scores={}, currentSongIdx=0, selectedWinnersThisRound=[];
-let timerInterval=null, timerSeconds=60, timerMax=60;
-let aiSuggestions=[];
-let selectedEras=[], selectedGenres=[];
+// ══════════════════════════════
+//  VIDEOS DATA
+// ══════════════════════════════
+const VD=[
+  {id:'291PIYVULPU',title:'100 musiques connues (2000–2020)',tag:'Pop · Variété',badge:'100 extraits',genre:['pop','tout'],era:['2000s','2010s','all'],mood:['amis','solo','famille']},
+  {id:'mgQP9pVFrSQ',title:'Blind Test toutes générations — 70 extraits (1961–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis','solo']},
+  {id:'0YWt4Ai8q_g',title:'Blind Test toutes générations — 70 extraits (1962–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis']},
+  {id:'8v_hXF9CZPU',title:'Blind Test toutes générations — 70 extraits (1964–2025)',tag:'Pop · Variété',badge:'70 extraits',genre:['pop','tout'],era:['all'],mood:['famille','amis']},
+  {id:'v0yVed3zq9M',title:'Blind test 100 titres super facile',tag:'Pop · Variété',badge:'100 extraits',genre:['pop','tout'],era:['all'],mood:['famille','enfants','amis']},
+  {id:'Etk-vCwOcN4',title:'Blind Test toutes générations — 50 chansons (1980–2022)',tag:'Pop · Variété',badge:'50 extraits',genre:['pop','tout'],era:['all'],mood:['amis','famille']},
+  {id:'h4JibqIq6AE',title:'Blind Test Années 80–90 — tubes cultes pop & rock',tag:'Années 80–90',badge:'Culte',genre:['pop','rock','tout'],era:['80s','90s','all'],mood:['amis','famille','solo']},
+  {id:'PYnPnSRL8uw',title:'Blind Test Années 90 — 40 extraits',tag:'Années 90',badge:'40 extraits',genre:['pop','tout'],era:['90s','all'],mood:['amis','famille','solo']},
+  {id:'T5qAMIy_nL0',title:'Blind Test Rock Années 90',tag:'Rock · Années 90',badge:'Rock',genre:['rock','tout'],era:['90s','all'],mood:['amis','solo']},
+  {id:'9pnLTGFGJHM',title:'Blind Test 80s–2000s US/UK — Pop, Rock, Rap',tag:'Pop · Rock · Rap',badge:'Hits US/UK',genre:['pop','rock','tout'],era:['80s','90s','2000s','all'],mood:['amis','solo']},
+  {id:'MXD5gq1C678',title:'Blind Test Jeux Vidéo — 20 musiques cultes',tag:'Jeux Vidéo',badge:'20 extraits',genre:['gaming'],era:['all','2000s','2010s'],mood:['amis','solo']},
+  {id:'GW-aEqojg34',title:'Blind Test Jeux Vidéo — 50 musiques',tag:'Jeux Vidéo',badge:'50 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'rPh7vI2I3QE',title:'Blind Test Jeux Vidéo — 100 extraits + 10 bonus',tag:'Jeux Vidéo',badge:'110 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'U5M2jdaCWyQ',title:'Blind Test Jeux Vidéo — 125 extraits + bonus',tag:'Jeux Vidéo',badge:'125 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'lVlNRxQSX8s',title:'Blind Test Jeux Vidéo — 110 extraits (avec réponses)',tag:'Jeux Vidéo',badge:'110 extraits',genre:['gaming'],era:['all'],mood:['amis','solo']},
+  {id:'rBE7JaaKKuE',title:'Blind Test Jeux Vidéo — 20 titres (facile)',tag:'Jeux Vidéo · Easy',badge:'Facile',genre:['gaming','disney'],era:['all'],mood:['enfants','famille','solo']},
+  {id:'XueP6Z7f14s',title:'Blind Test 2021 — 70 extraits toute ambiance',tag:'Tout genre',badge:'70 extraits',genre:['tout'],era:['all','2000s','2010s'],mood:['enfants','famille','amis']},
+  {id:'Nwg50BREcfg',title:'Blind Test Jeux Vidéo — 50 extraits toutes générations',tag:'Jeux Vidéo',badge:'50 extraits',genre:['gaming','tout'],era:['all'],mood:['amis','solo','famille']},
+];
 
-// ═══════════════════════════════════════════════
+const PC=[
+  {bg:'rgba(196,165,253,.22)',bd:'rgba(196,165,253,.48)',tx:'#c4b5fd',av:'#7c3aed'},
+  {bg:'rgba(249,168,212,.2)',bd:'rgba(249,168,212,.48)',tx:'#f9a8d4',av:'#db2777'},
+  {bg:'rgba(147,197,253,.2)',bd:'rgba(147,197,253,.48)',tx:'#93c5fd',av:'#0ea5e9'},
+  {bg:'rgba(110,231,183,.2)',bd:'rgba(110,231,183,.48)',tx:'#6ee7b7',av:'#059669'},
+  {bg:'rgba(253,224,132,.2)',bd:'rgba(253,224,132,.48)',tx:'#fde047',av:'#ca8a04'},
+  {bg:'rgba(252,165,165,.2)',bd:'rgba(252,165,165,.48)',tx:'#fca5a5',av:'#dc2626'},
+  {bg:'rgba(216,180,254,.2)',bd:'rgba(216,180,254,.48)',tx:'#d8b4fe',av:'#9333ea'},
+  {bg:'rgba(134,239,172,.2)',bd:'rgba(134,239,172,.48)',tx:'#86efac',av:'#16a34a'},
+];
+
+// ══════════════════════════════
 //  NAV
-// ═══════════════════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
+// ══════════════════════════════
+function switchTab(tab,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('screen-'+tab).classList.add('on');
+  el.classList.add('on');
 }
-function goHome(){stopTimer();showScreen('screen-home');}
-function goSetup(){
-  if(players.length<2){showToast('⚠️ Ajoute au moins 2 joueurs !');return;}
-  showScreen('screen-setup');
-}
-
-// ═══════════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════════
-let toastTO;
-function showToast(msg,dur=2500){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTO);toastTO=setTimeout(()=>t.classList.remove('show'),dur);
+function goScores(){
+  closeOverlay();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('screen-scores').classList.add('on');
+  document.querySelectorAll('.tab')[1].classList.add('on');
 }
 
-// ═══════════════════════════════════════════════
-//  TABS
-// ═══════════════════════════════════════════════
-function switchTab(tab){
-  document.getElementById('panel-ai').style.display = tab==='ai'?'block':'none';
-  document.getElementById('panel-manual').style.display = tab==='manual'?'block':'none';
-  document.getElementById('tab-ai').classList.toggle('active',tab==='ai');
-  document.getElementById('tab-manual').classList.toggle('active',tab==='manual');
+// ══════════════════════════════
+//  RECO
+// ══════════════════════════════
+const prefs={mood:null,genre:null,era:null};
+function pick(k,v){
+  prefs[k]=v;
+  document.querySelectorAll('[data-k="'+k+'"]').forEach(b=>b.classList.toggle('sel',b.dataset.v===v));
+  if(k==='mood') unlock('q2');
+  if(k==='genre') unlock('q3');
+  if(k==='era') document.getElementById('ctabtn').classList.add('vis');
+}
+function unlock(id){
+  const e=document.getElementById(id);e.style.opacity='1';e.style.pointerEvents='auto';
+  setTimeout(()=>e.scrollIntoView({behavior:'smooth',block:'center'}),120);
+}
+function showResults(){
+  if(!prefs.mood||!prefs.genre||!prefs.era)return;
+  const sc=VD.map(v=>{
+    let s=0;
+    if(v.mood.includes(prefs.mood))s+=3;
+    if(v.genre.includes(prefs.genre))s+=4;
+    if(v.era.includes(prefs.era))s+=3;
+    return{...v,score:s};
+  }).filter(v=>v.score>=3).sort((a,b)=>b.score-a.score);
+  const seen=new Set(),picks=[];
+  for(const v of sc){if(!seen.has(v.id)){seen.add(v.id);picks.push(v);}if(picks.length>=6)break;}
+  if(picks.length<3){for(const v of VD){if(!seen.has(v.id)){seen.add(v.id);picks.push(v);}if(picks.length>=6)break;}}
+  document.getElementById('vgrid').innerHTML=picks.map(v=>`
+    <div class="vcard" onclick="openVideo('${v.id}','${v.title.replace(/'/g,"&#39;")}')">
+      <div class="vci">
+        <div class="vthumb">
+          <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
+          <div class="vplay"><div class="vpc">▶</div></div>
+          <div class="vbadge">${v.badge}</div>
+        </div>
+        <div class="vbody">
+          <div class="vtag">${v.tag}</div>
+          <div class="vtitle">${v.title}</div>
+          <div class="vmeta">🦄 Cliquer pour regarder ici</div>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('qs').style.display='none';
+  const rr=document.getElementById('rr');rr.style.display='block';
+  rr.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetReco(){
+  prefs.mood=prefs.genre=prefs.era=null;
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('sel'));
+  ['q2','q3'].forEach(id=>{const e=document.getElementById(id);e.style.opacity='.38';e.style.pointerEvents='none';});
+  document.getElementById('ctabtn').classList.remove('vis');
+  document.getElementById('rr').style.display='none';
+  document.getElementById('qs').style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ═══════════════════════════════════════════════
-//  PLAYERS
-// ═══════════════════════════════════════════════
-function addPlayer(){
-  const inp=document.getElementById('player-input');
-  const name=inp.value.trim();
-  if(!name){showToast('✏️ Entre un nom');return;}
-  if(players.includes(name)){showToast('⚠️ Ce joueur existe déjà !');return;}
-  if(players.length>=8){showToast('❌ Maximum 8 joueurs !');return;}
-  players.push(name);scores[name]=0;inp.value='';inp.focus();renderPlayers();
+// ══════════════════════════════
+//  YOUTUBE IFRAME API
+// ══════════════════════════════
+var ytPlayer = null;
+var ytReady = false;
+var pendingVideoId = null;
+
+// Inject the YouTube IFrame API script once
+(function(){
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+// Called automatically by the API when ready
+function onYouTubeIframeAPIReady() {
+  ytReady = true;
+  ytPlayer = new YT.Player('yt-player', {
+    height: '100%',
+    width: '100%',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1
+    },
+    events: {
+      onReady: function(e) {
+        if (pendingVideoId) {
+          e.target.loadVideoById(pendingVideoId);
+          pendingVideoId = null;
+        }
+      }
+    }
+  });
 }
-document.getElementById('player-input').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
-function removePlayer(name){players=players.filter(p=>p!==name);delete scores[name];renderPlayers();}
-function renderPlayers(){
-  const list=document.getElementById('player-list');
-  const badge=document.getElementById('player-count');
-  if(players.length===0){
-    list.innerHTML='<div class="empty-state"><span class="icon">👤</span>Ajoute au moins 2 joueurs</div>';
-    badge.style.display='none';
+
+// ══════════════════════════════
+//  VIDEO OVERLAY
+// ══════════════════════════════
+function openVideo(id, title) {
+  document.getElementById('mvtitle').textContent = title;
+  renderInlinePlayers();
+  document.getElementById('overlay').classList.add('on');
+  document.body.style.overflow = 'hidden';
+
+  if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+    ytPlayer.loadVideoById(id);
   } else {
-    badge.style.display='inline';badge.textContent=players.length;
-    list.innerHTML=players.map((p,i)=>`
-      <div class="player-tag">
-        <span class="dot" style="background:${COLORS[i]}"></span>${escH(p)}
-        <button onclick="removePlayer('${escJ(p)}')" title="Supprimer">✕</button>
-      </div>`).join('');
+    pendingVideoId = id;
+    // Fallback: si l'API n'est pas encore prête, on réessaie après un délai
+    var tries = 0;
+    var check = setInterval(function() {
+      tries++;
+      if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+        ytPlayer.loadVideoById(pendingVideoId);
+        pendingVideoId = null;
+        clearInterval(check);
+      } else if (tries > 20) {
+        clearInterval(check);
+      }
+    }, 200);
   }
-  document.getElementById('btn-next-setup').disabled=players.length<2;
 }
 
-// ═══════════════════════════════════════════════
-//  ERA / GENRE PICKERS
-// ═══════════════════════════════════════════════
-function toggleEra(el){
-  const era=el.dataset.era;
-  if(era==='all'){
-    // Select all eras
-    selectedEras=['60s-70s','80s','90s','2000s','2010s','2020s'];
-    document.querySelectorAll('.epoch-btn').forEach(b=>b.classList.add('selected'));
+function closeOverlay() {
+  if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+    ytPlayer.stopVideo();
+  }
+  document.getElementById('overlay').classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('overlay').addEventListener('click', function(e) { if (e.target === this) closeOverlay(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+// ══════════════════════════════
+//  PLAYERS
+// ══════════════════════════════
+let players=[];
+function ini(n){return n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+function addPlayer(){
+  const inp=document.getElementById('pinput');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(players.find(p=>p.name.toLowerCase()===name.toLowerCase())){
+    inp.style.borderColor='rgba(239,68,68,.6)';setTimeout(()=>inp.style.borderColor='',900);return;
+  }
+  if(players.length>=8)return;
+  players.push({name,score:0});inp.value='';inp.focus();
+  renderPlayers();renderInlinePlayers();
+}
+function removePlayer(i){players.splice(i,1);renderPlayers();renderInlinePlayers();}
+function chScore(i,d){players[i].score=Math.max(0,players[i].score+d);renderPlayers();renderInlinePlayers();}
+function resetScores(){players.forEach(p=>p.score=0);renderPlayers();renderInlinePlayers();}
+function clearAll(){players=[];renderPlayers();renderInlinePlayers();}
+
+function renderPlayers(){
+  const el=document.getElementById('plist');
+  if(!players.length){
+    el.innerHTML='<div class="empty"><div class="big">🎤</div>Aucun joueur.<br>Ajoute des joueurs pour commencer !</div>';
+    document.getElementById('podcard').style.display='none';return;
+  }
+  el.innerHTML=players.map((p,i)=>{const c=PC[i%PC.length];return`
+    <div class="prow" style="background:${c.bg};border:1px solid ${c.bd}">
+      <div class="pav" style="background:${c.av}">${ini(p.name)}</div>
+      <div class="pname" style="color:${c.tx}">${p.name}</div>
+      <div class="pctrl">
+        <button class="psb pm" onclick="chScore(${i},-1)">−</button>
+        <div class="pscore" style="color:${c.tx}">${p.score}</div>
+        <button class="psb pp" onclick="chScore(${i},1)">+</button>
+      </div>
+      <button class="del" onclick="removePlayer(${i})">✕</button>
+    </div>`;}).join('');
+  renderPodium();
+}
+
+function renderPodium(){
+  if(players.length<2){document.getElementById('podcard').style.display='none';return;}
+  document.getElementById('podcard').style.display='block';
+  const sorted=[...players].map((p,i)=>({...p,ci:i})).sort((a,b)=>b.score-a.score);
+  const md=['🥇','🥈','🥉'];
+  document.getElementById('podlist').innerHTML=sorted.map((p,r)=>{const c=PC[p.ci%PC.length];return`
+    <div class="podrow" style="background:${c.bg};border:1px solid ${c.bd}">
+      <div class="podrank">${md[r]||'#'+(r+1)}</div>
+      <div class="podname" style="color:${c.tx}">${p.name}</div>
+      <div class="podpts" style="color:${c.tx}">${p.score} pt${p.score!==1?'s':''}</div>
+    </div>`;}).join('');
+}
+
+function renderInlinePlayers(){
+  const el = document.getElementById('inline-players-list');
+  const wrap = document.getElementById('inline-scores');
+  if (!players.length) {
+    el.innerHTML = '<span class="inline-empty">Aucun joueur — <span onclick="goScores()">ajoute des joueurs ici</span></span>';
+    wrap.classList.remove('has-players');
     return;
   }
-  // Remove "all" highlight when picking specific
-  document.querySelector('[data-era="all"]').classList.remove('selected');
-  el.classList.toggle('selected');
-  if(el.classList.contains('selected')){
-    if(!selectedEras.includes(era)) selectedEras.push(era);
-  } else {
-    selectedEras=selectedEras.filter(e=>e!==era);
-  }
-}
-function toggleGenre(el){
-  const genre=el.dataset.genre;
-  el.classList.toggle('selected');
-  if(el.classList.contains('selected')){
-    if(!selectedGenres.includes(genre)) selectedGenres.push(genre);
-  } else {
-    selectedGenres=selectedGenres.filter(g=>g!==genre);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  AI SUGGESTION ENGINE
-// ═══════════════════════════════════════════════
-const ERA_LABELS={
-  '60s-70s':'des années 60-70',
-  '80s':'des années 80',
-  '90s':'des années 90',
-  '2000s':'des années 2000',
-  '2010s':'des années 2010',
-  '2020s':'des années 2020'
-};
-const GENRE_LABELS={
-  pop:'Pop internationale',rap:'Rap / Hip-hop',rock:'Rock',french:'Chanson française / variété',
-  electro:'Électro / Dance',rnb:'R&B / Soul',disney:'Musiques de films / Disney / séries',latin:'Latin / Reggaeton'
-};
-
-async function generateSuggestions(){
-  if(selectedEras.length===0 && selectedGenres.length===0){
-    showToast('⚠️ Sélectionne au moins une époque ou un genre');return;
-  }
-  const eraText = selectedEras.length>0 ? selectedEras.map(e=>ERA_LABELS[e]).join(', ') : 'toutes les époques';
-  const genreText = selectedGenres.length>0 ? selectedGenres.map(g=>GENRE_LABELS[g]).join(', ') : 'tous genres';
-
-  document.getElementById('ai-loading').style.display='flex';
-  document.getElementById('ai-results').style.display='none';
-  document.getElementById('btn-generate').disabled=true;
-
-  const loadingMsgs=[
-    'L\'IA cherche les meilleures chansons…',
-    'Fouille dans des milliers de titres…',
-    'Sélection des pépites musicales…',
-    'Presque prêt !'
-  ];
-  let lIdx=0;
-  const lInterval=setInterval(()=>{
-    document.getElementById('ai-loading-text').textContent=loadingMsgs[Math.min(lIdx++,loadingMsgs.length-1)];
-  },1800);
-
-  const prompt=`Tu es un expert musical pour un jeu de BlindTest. 
-Génère une liste de 12 chansons parfaites pour un BlindTest avec ces critères :
-- Époques : ${eraText}
-- Genres : ${genreText}
-- Les chansons doivent être très connues du grand public francophone
-- Mélange des titres faciles et quelques difficiles
-- Évite les chansons trop obscures
-
-Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, exactement dans ce format :
-{"songs":[{"title":"Titre de la chanson","artist":"Nom de l'artiste","year":2005,"ytSearch":"titre artiste officiel"}]}
-
-Le champ "ytSearch" doit être une requête de recherche YouTube optimale pour trouver le clip officiel (ex: "Lose Yourself Eminem official").
-Génère exactement 12 chansons.`;
-
-  try {
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await resp.json();
-    clearInterval(lInterval);
-    const raw=data.content.map(c=>c.text||'').join('');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
-    aiSuggestions=parsed.songs||[];
-    renderSuggestions();
-  } catch(err){
-    clearInterval(lInterval);
-    showToast('❌ Erreur IA — réessaie');
-    console.error(err);
-  }
-  document.getElementById('ai-loading').style.display='none';
-  document.getElementById('btn-generate').disabled=false;
-}
-
-function renderSuggestions(){
-  if(aiSuggestions.length===0)return;
-  const eraLabels=selectedEras.map(e=>ERA_LABELS[e]||e).join(', ')||'toutes époques';
-  document.getElementById('ai-results-title').textContent=`✨ ${aiSuggestions.length} suggestions — ${eraLabels}`;
-  document.getElementById('suggestion-list').innerHTML=aiSuggestions.map((s,i)=>{
-    const alreadyAdded=songs.some(x=>x.title===s.title&&x.artist===s.artist);
-    return `<div class="suggestion-item ${alreadyAdded?'added':''}" id="sug-${i}" onclick="${alreadyAdded?'':'addSuggestion('+i+')'}">
-      <div class="sug-num">${i+1}</div>
-      <div class="sug-info">
-        <div class="sug-title">${escH(s.title)}</div>
-        <div class="sug-artist">${escH(s.artist)}${s.year?' · '+s.year:''}</div>
+  wrap.classList.add('has-players');
+  el.innerHTML = players.map((p, i) => {
+    const c = PC[i % PC.length];
+    return `
+    <div class="inline-prow" style="background:${c.bg};border-color:${c.bd}">
+      <div class="inline-pav" style="background:${c.av}">${ini(p.name)}</div>
+      <div class="inline-pname" style="color:${c.tx}">${p.name}</div>
+      <div class="inline-ctrl">
+        <button class="isb im" onclick="chScore(${i},-1);renderInlinePlayers()">−</button>
+        <div class="inline-score" style="color:${c.tx}">${p.score}</div>
+        <button class="isb ip" onclick="chScore(${i},1);renderInlinePlayers()">+</button>
       </div>
-      ${alreadyAdded
-        ? '<span class="sug-added-label">✓ Ajouté</span>'
-        : '<span class="sug-add">+ Ajouter</span>'}
     </div>`;
   }).join('');
-  document.getElementById('ai-results').style.display='block';
 }
-
-function addSuggestion(i){
-  const s=aiSuggestions[i];
-  if(!s)return;
-  const alreadyAdded=songs.some(x=>x.title===s.title&&x.artist===s.artist);
-  if(alreadyAdded){showToast('⚠️ Déjà dans la liste');return;}
-  // Store ytSearch query — we'll resolve to embed URL at game time
-  songs.push({title:s.title,artist:s.artist,url:'',ytSearch:s.ytSearch||s.title+' '+s.artist+' official'});
-  renderSongs();
-  renderSuggestions(); // refresh to show "added" state
-  showToast(`✅ "${s.title}" ajouté !`);
-}
-
-function addAllSuggestions(){
-  let added=0;
-  aiSuggestions.forEach(s=>{
-    if(!songs.some(x=>x.title===s.title&&x.artist===s.artist)){
-      songs.push({title:s.title,artist:s.artist,url:'',ytSearch:s.ytSearch||s.title+' '+s.artist+' official'});
-      added++;
-    }
-  });
-  renderSongs();renderSuggestions();
-  showToast(`✅ ${added} chanson(s) ajoutée(s) !`);
-}
-
-// ═══════════════════════════════════════════════
-//  MANUAL SONG ADD
-// ═══════════════════════════════════════════════
-function addSong(){
-  const title=document.getElementById('song-title').value.trim();
-  const artist=document.getElementById('song-artist').value.trim();
-  const url=document.getElementById('song-url').value.trim();
-  if(!title){showToast('✏️ Titre obligatoire');document.getElementById('song-title').focus();return;}
-  if(!artist){showToast('✏️ Artiste obligatoire');document.getElementById('song-artist').focus();return;}
-  songs.push({title,artist,url,ytSearch:title+' '+artist+' official'});
-  document.getElementById('song-title').value='';
-  document.getElementById('song-artist').value='';
-  document.getElementById('song-url').value='';
-  document.getElementById('song-title').focus();
-  renderSongs();showToast(`✅ "${title}" ajouté !`);
-}
-['song-title','song-artist','song-url'].forEach((id,i,arr)=>{
-  document.getElementById(id).addEventListener('keydown',e=>{
-    if(e.key==='Enter'){if(i<arr.length-1)document.getElementById(arr[i+1]).focus();else addSong();}
-  });
-});
-
-function removeSong(i){songs.splice(i,1);renderSongs();}
-function clearAllSongs(){if(!confirm('Effacer toutes les chansons ?'))return;songs=[];renderSongs();}
-function moveSong(i,dir){const j=i+dir;if(j<0||j>=songs.length)return;[songs[i],songs[j]]=[songs[j],songs[i]];renderSongs();}
-
-function renderSongs(){
-  const list=document.getElementById('song-list');
-  const badge=document.getElementById('song-count');
-  const clearBtn=document.getElementById('btn-clear-songs');
-  if(songs.length===0){
-    list.innerHTML='<div class="empty-state"><span class="icon">🎶</span>Génère des suggestions ou ajoute manuellement</div>';
-    badge.style.display='none';clearBtn.style.display='none';
-    document.getElementById('btn-start').disabled=true;return;
-  }
-  badge.style.display='inline';badge.textContent=songs.length;clearBtn.style.display='inline-flex';
-  list.innerHTML=songs.map((s,i)=>{
-    const ytId=extractYTId(s.url);
-    const hasYT=!!ytId, hasAudio=s.url&&!ytId, hasSearch=s.ytSearch&&!s.url;
-    let bHtml='';
-    if(hasYT) bHtml='<span class="song-badge">▶ YT</span>';
-    else if(hasAudio) bHtml='<span class="song-badge" style="color:var(--correct);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.07);">♪ MP3</span>';
-    else if(hasSearch) bHtml='<span class="song-badge" style="color:#818cf8;border-color:rgba(129,140,248,.3);background:rgba(129,140,248,.07);">✨ IA</span>';
-    return `<div class="song-item">
-      <div class="song-num">${i+1}</div>
-      <div class="song-info"><div class="song-title-text">${escH(s.title)}</div><div class="song-artist-text">${escH(s.artist)}</div></div>
-      ${bHtml}
-      <button class="btn btn-ghost btn-icon" onclick="moveSong(${i},-1)" ${i===0?'disabled':''}>↑</button>
-      <button class="btn btn-ghost btn-icon" onclick="moveSong(${i},1)" ${i===songs.length-1?'disabled':''}>↓</button>
-      <button class="btn btn-icon" style="background:rgba(248,113,113,.1);color:var(--wrong);border:1px solid rgba(248,113,113,.18)" onclick="removeSong(${i})">✕</button>
-    </div>`;
-  }).join('');
-  document.getElementById('btn-start').disabled=false;
-}
-
-// ═══════════════════════════════════════════════
-//  GAME
-// ═══════════════════════════════════════════════
-function startGame(){
-  if(songs.length===0){showToast('⚠️ Ajoute au moins une chanson');return;}
-  currentSongIdx=0;players.forEach(p=>scores[p]=0);
-  showScreen('screen-game');loadRound();
-}
-
-async function loadRound(){
-  const song=songs[currentSongIdx];
-  document.getElementById('round-info').textContent=`Manche ${currentSongIdx+1} / ${songs.length}`;
-  document.getElementById('progress-fill').style.width=`${(currentSongIdx/songs.length)*100}%`;
-  renderScoreboard();
-  const waveform=document.getElementById('waveform');
-  const container=document.getElementById('media-container');
-  const hint=document.getElementById('song-hint-text');
-  container.innerHTML='';
-  waveform.classList.remove('paused');
-
-  // Priority: explicit URL → ytSearch → manual
-  if(song.url){
-    const ytId=extractYTId(song.url);
-    if(ytId){
-      embedYT(container,ytId);
-    } else {
-      const audio=document.createElement('audio');
-      audio.controls=true;audio.autoplay=true;audio.src=song.url;
-      container.appendChild(audio);
-    }
-    hint.textContent='';
-  } else if(song.ytSearch){
-    hint.textContent='🔍 Recherche YouTube en cours…';
-    const ytId=await searchYouTube(song.ytSearch);
-    if(ytId){
-      song.url='https://www.youtube.com/watch?v='+ytId; // cache for replay
-      embedYT(container,ytId);
-      hint.textContent='';
-    } else {
-      hint.textContent='⚠️ Vidéo non trouvée — joue la chanson manuellement';
-      waveform.classList.add('paused');
-    }
-  } else {
-    hint.textContent='🎙 Joue la chanson manuellement, puis révèle la réponse';
-    waveform.classList.add('paused');
-  }
-  startTimer();
-}
-
-function embedYT(container,ytId){
-  const iframe=document.createElement('iframe');
-  iframe.src=`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1`;
-  iframe.width='100%';iframe.height='200';
-  iframe.allow='autoplay; encrypted-media';
-  iframe.style.borderRadius='10px';
-  container.appendChild(iframe);
-}
-
-// YouTube search via Claude AI (since no YT Data API key needed)
-async function searchYouTube(query){
-  try {
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:100,
-        messages:[{role:'user',content:`Give me ONLY the YouTube video ID (11 characters) for the most popular/official music video of: "${query}". Reply with ONLY the video ID, nothing else. Example: dQw4w9WgXcQ`}]
-      })
-    });
-    const data=await resp.json();
-    const raw=data.content.map(c=>c.text||'').join('').trim();
-    const match=raw.match(/[a-zA-Z0-9_-]{11}/);
-    return match?match[0]:null;
-  } catch(e){return null;}
-}
-
-// ═══════════════════════════════════════════════
-//  TIMER
-// ═══════════════════════════════════════════════
-function startTimer(){
-  stopTimer();
-  const enabled=document.getElementById('timer-enabled').checked;
-  const cont=document.getElementById('timer-ring-container');
-  if(!enabled){cont.style.display='none';return;}
-  timerMax=parseInt(document.getElementById('timer-duration').value);
-  timerSeconds=timerMax;cont.style.display='block';updateTimerDisplay();
-  timerInterval=setInterval(()=>{
-    timerSeconds--;updateTimerDisplay();
-    if(timerSeconds<=0){stopTimer();showToast('⏰ Temps écoulé !',2000);revealAnswer();}
-  },1000);
-}
-function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
-function updateTimerDisplay(){
-  const ring=document.getElementById('timer-ring');
-  const fill=document.getElementById('timer-ring-fill');
-  const text=document.getElementById('timer-ring-text');
-  const circ=182.2;
-  fill.style.strokeDashoffset=circ*(1-timerSeconds/timerMax);
-  text.textContent=timerSeconds;
-  ring.classList.toggle('urgent',timerSeconds<=10);
-}
-
-// ═══════════════════════════════════════════════
-//  REVEAL / WINNERS
-// ═══════════════════════════════════════════════
-function revealAnswer(){
-  stopTimer();
-  const song=songs[currentSongIdx];
-  document.getElementById('reveal-round').textContent=`Manche ${currentSongIdx+1} / ${songs.length}`;
-  document.getElementById('reveal-title').textContent=song.title;
-  document.getElementById('reveal-artist').textContent=`— ${song.artist}`;
-  selectedWinnersThisRound=[];
-  document.getElementById('winner-selection-zone').innerHTML=players.map((p,i)=>`
-    <button class="winner-btn" id="wbtn-${i}" onclick="toggleWinner('${escJ(p)}',${i})">
-      <span class="w-dot" style="background:${COLORS[i]}"></span>${escH(p)}
-    </button>`).join('');
-  showScreen('screen-reveal');
-}
-function skipSong(){
-  stopTimer();
-  if(currentSongIdx>=songs.length-1){showEndScreen();}
-  else{currentSongIdx++;showScreen('screen-game');loadRound();}
-}
-function toggleWinner(name,idx){
-  const btn=document.getElementById(`wbtn-${idx}`);
-  if(selectedWinnersThisRound.includes(name)){
-    selectedWinnersThisRound=selectedWinnersThisRound.filter(w=>w!==name);btn.classList.remove('selected');
-  } else {
-    if(selectedWinnersThisRound.length>=2){showToast('⚠️ Maximum 2 gagnants');return;}
-    selectedWinnersThisRound.push(name);btn.classList.add('selected');
-  }
-}
-function noWinner(){selectedWinnersThisRound=[];document.querySelectorAll('.winner-btn').forEach(b=>b.classList.remove('selected'));validateWinnersAndNext();}
-function validateWinnersAndNext(){
-  const pts=selectedWinnersThisRound.length===1?2:1;
-  const prev={...scores};
-  selectedWinnersThisRound.forEach(w=>scores[w]=(scores[w]||0)+pts);
-  if(selectedWinnersThisRound.length>0)
-    showToast(`🎉 ${selectedWinnersThisRound.join(' & ')} ${pts===2?'gagne 2 pts !':'gagnent 1 pt chacun !'}`,2200);
-  if(currentSongIdx>=songs.length-1){showEndScreen();}
-  else{
-    currentSongIdx++;
-    showScreen('screen-game');
-    setTimeout(()=>{loadRound();animateScores(prev);},100);
-  }
-}
-function animateScores(prev){
-  players.forEach(p=>{
-    if(scores[p]!==prev[p]){
-      const el=document.querySelector(`[data-player="${CSS.escape(p)}"] .pts`);
-      if(el){el.classList.add('just-scored');setTimeout(()=>el.classList.remove('just-scored'),700);}
-    }
-  });
-}
-function renderScoreboard(){
-  const sb=document.getElementById('scoreboard');
-  const max=Math.max(...players.map(p=>scores[p]||0));
-  sb.innerHTML=players.map((p,i)=>{
-    const s=scores[p]||0;
-    return `<div class="score-card ${s===max&&max>0?'leading':''}" data-player="${escH(p)}" style="--dot-color:${COLORS[i]}">
-      <div class="name">${escH(p)}</div><div class="pts">${s}</div></div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════
-//  END
-// ═══════════════════════════════════════════════
-function showEndScreen(){
-  document.getElementById('progress-fill').style.width='100%';
-  const sorted=[...players].sort((a,b)=>(scores[b]||0)-(scores[a]||0));
-  const po=sorted.length>=3?[sorted[1],sorted[0],sorted[2]]:(sorted.length===2?[null,sorted[0],sorted[1]]:[null,sorted[0],null]);
-  const heights=[88,118,68],trophies=['🥈','🥇','🥉'],pc=['#94a3b8','#fbbf24','#cd7f32'];
-  document.getElementById('podium').innerHTML=po.map((p,i)=>{
-    if(!p)return'<div></div>';
-    const ci=players.indexOf(p);
-    return `<div class="podium-item">
-      <div class="podium-trophy">${trophies[i]}</div>
-      <div class="podium-block" style="height:${heights[i]}px;background:${pc[i]}">${i===1?'1':i===0?'2':'3'}</div>
-      <div class="podium-name" style="color:${COLORS[ci]}">${escH(p)}</div>
-      <div class="podium-pts">${scores[p]||0} pts</div>
-    </div>`;
-  }).join('');
-  const icons=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
-  document.getElementById('final-list').innerHTML=sorted.map((p,r)=>{
-    const ci=players.indexOf(p);
-    return `<div class="result-row">
-      <div class="result-rank">${icons[r]||r+1}</div>
-      <div class="result-dot" style="background:${COLORS[ci]}"></div>
-      <div class="result-name">${escH(p)}</div>
-      <div class="result-pts">${scores[p]||0} pts</div>
-    </div>`;
-  }).join('');
-  showScreen('screen-end');launchConfetti();
-}
-function restartSame(){players.forEach(p=>scores[p]=0);currentSongIdx=0;showScreen('screen-game');loadRound();}
-
-// ═══════════════════════════════════════════════
-//  CONFETTI
-// ═══════════════════════════════════════════════
-function launchConfetti(){
-  const canvas=document.getElementById('confetti-canvas');
-  const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const colors=['#c084fc','#f472b6','#38bdf8','#fbbf24','#34d399','#fb923c'];
-  const pieces=Array.from({length:130},()=>({
-    x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,
-    w:Math.random()*10+5,h:Math.random()*5+3,
-    color:colors[Math.floor(Math.random()*colors.length)],
-    vx:Math.random()*2-1,vy:Math.random()*4+2,
-    rot:Math.random()*360,vrot:Math.random()*6-3,alpha:1
-  }));
-  let frame=0;
-  (function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pieces.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;
-      if(frame>110)p.alpha-=.009;
-      ctx.save();ctx.globalAlpha=Math.max(0,p.alpha);
-      ctx.translate(p.x+p.w/2,p.y+p.h/2);ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
-    });
-    frame++;
-    if(pieces.some(p=>p.alpha>0))requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
-  })();
-}
-
-// ═══════════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════════
-function extractYTId(url){
-  if(!url)return null;
-  const m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^#&?]{11})/);
-  return m?m[1]:null;
-}
-function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function escJ(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 </script>
 </body>
 </html>
